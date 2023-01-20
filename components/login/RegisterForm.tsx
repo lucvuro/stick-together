@@ -1,11 +1,26 @@
-import { Box, Button, InputAdornment, TextField } from '@mui/material';
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  Button,
+  InputAdornment,
+  TextField,
+} from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import PersonIcon from '@mui/icons-material/Person';
 import KeyIcon from '@mui/icons-material/Key';
 import styles from '@/styles/Login.module.css';
 import { useForm, Controller } from 'react-hook-form';
+import { auth } from '@/firebase';
+import { createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
+import { LoadingButton } from '@mui/lab';
+import { getErrorFirebase } from '@/utils/getErrorFisebase';
 interface RegisterFormProps {}
-
+interface FormData {
+  email: string;
+  password: string;
+  confirm_password: string;
+}
 const RegisterForm: React.FunctionComponent<RegisterFormProps> = (props) => {
   const {
     handleSubmit,
@@ -20,12 +35,41 @@ const RegisterForm: React.FunctionComponent<RegisterFormProps> = (props) => {
       confirm_password: '',
     },
   });
-  const onSubmit = (formData: any) => {
-    alert(JSON.stringify(formData));
+  const [errorRegister, setErrorRegister] = useState<boolean>(false);
+  const [errorRegisterMessage, setErrorRegisterMessage] = useState<string>('');
+  const [successRegister, setSuccessRegister] = useState<boolean>(false);
+  const onSubmit = async (formData: FormData) => {
+    setErrorRegister(false);
+    setSuccessRegister(false);
+    try {
+      const userCredential: UserCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      setSuccessRegister(true);
+      reset();
+      console.log(userCredential)
+    } catch (err: any) {
+      setErrorRegister(true);
+      const errorMessage: string = getErrorFirebase(err);
+      setErrorRegisterMessage(errorMessage);
+      console.log(err);
+    }
   };
   return (
     <>
-      <Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        {errorRegister && (
+          <Alert severity="error">
+            <AlertTitle>{errorRegisterMessage}</AlertTitle>
+          </Alert>
+        )}
+        {successRegister && (
+          <Alert severity="success">
+            <AlertTitle>Successfully Sign Up!</AlertTitle>
+          </Alert>
+        )}
         <form className={styles.loginForm} onSubmit={handleSubmit(onSubmit)}>
           <Box>
             <Controller
@@ -45,7 +89,8 @@ const RegisterForm: React.FunctionComponent<RegisterFormProps> = (props) => {
                     placeholder="Email"
                     value={value}
                     onChange={onChange}
-                    error={!!errors['email']}
+                    disabled={isSubmitting}
+                    error={!!errors['email'] || errorRegister}
                     helperText={
                       !!errors['email']
                         ? errors['email'].message?.toString()
@@ -67,7 +112,14 @@ const RegisterForm: React.FunctionComponent<RegisterFormProps> = (props) => {
             <Controller
               name="password"
               control={control}
-              rules={{ required: '*Password is required' }}
+              rules={{
+                required: '*Password is required',
+                validate: (value: string) => {
+                  if (value.length <= 5) {
+                    return 'Password is weak. At least 6 characters';
+                  }
+                },
+              }}
               render={({ field: { onChange, value } }) => {
                 return (
                   <TextField
@@ -76,6 +128,7 @@ const RegisterForm: React.FunctionComponent<RegisterFormProps> = (props) => {
                     type="password"
                     value={value}
                     onChange={onChange}
+                    disabled={isSubmitting}
                     error={!!errors['password']}
                     helperText={
                       !!errors['password']
@@ -132,9 +185,14 @@ const RegisterForm: React.FunctionComponent<RegisterFormProps> = (props) => {
             />
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Button type="submit" variant="contained" fullWidth>
+            <LoadingButton
+              loading={isSubmitting}
+              type="submit"
+              variant="contained"
+              fullWidth
+            >
               Sign Up
-            </Button>
+            </LoadingButton>
           </Box>
         </form>
       </Box>
