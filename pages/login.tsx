@@ -1,13 +1,25 @@
 import Head from 'next/head';
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import styles from '@/styles/Login.module.css';
 import { Box } from '@mui/material';
 import LoginForm from '@/components/login/LoginForm';
 import RegisterForm from '@/components/login/RegisterForm';
+import { onAuthStateChanged } from 'firebase/auth';
+import useAuth from '@/hooks/useAuth';
 export interface LoginPageProps {}
 
 const Login = (props: LoginPageProps) => {
   const [loginShow, setLoginShow] = useState<boolean>(true);
+  const {router, auth, authContext} = useAuth()
+  useEffect (() => {
+    const unsub = onAuthStateChanged(auth,(user) => {
+      if (user) {
+        authContext.setCurrentUser(user)
+        router.push('/')
+      }
+    })
+    return () => unsub()
+  },[])
   return (
     <>
       <Head>

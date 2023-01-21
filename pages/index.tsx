@@ -1,11 +1,29 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import { Inter } from '@next/font/google'
-import styles from '@/styles/Home.module.css'
+import Head from 'next/head';
+import Image from 'next/image';
+import { Inter } from '@next/font/google';
+import styles from '@/styles/Home.module.css';
+import { useContext, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { AuthContext } from '@/Contexts/authContext';
+import { Box, CircularProgress } from '@mui/material';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '@/firebase';
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
+  const router = useRouter();
+  const authContext = useContext(AuthContext);
+  useEffect (() => {
+    const unsub = onAuthStateChanged(auth,(user) => {
+      if (user) authContext.setCurrentUser(user)
+      else {
+        authContext.setCurrentUser(null)
+        router.push('/login')
+      }
+    })
+    return () => unsub()
+  },[])
   return (
     <>
       <Head>
@@ -17,8 +35,7 @@ export default function Home() {
       <main className={styles.main}>
         <div className={styles.description}>
           <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>pages/index.tsx</code>
+            {JSON.stringify(authContext.currentUser)}
           </p>
           <div>
             <a
@@ -119,5 +136,5 @@ export default function Home() {
         </div>
       </main>
     </>
-  )
+  );
 }
