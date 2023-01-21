@@ -15,6 +15,7 @@ import { auth } from '@/firebase';
 import { createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
 import { LoadingButton } from '@mui/lab';
 import { getErrorFirebase } from '@/utils/getErrorFisebase';
+import useDatabase from '@/hooks/useDatabase';
 interface RegisterFormProps {}
 interface FormData {
   email: string;
@@ -38,18 +39,20 @@ const RegisterForm: React.FunctionComponent<RegisterFormProps> = (props) => {
   const [errorRegister, setErrorRegister] = useState<boolean>(false);
   const [errorRegisterMessage, setErrorRegisterMessage] = useState<string>('');
   const [successRegister, setSuccessRegister] = useState<boolean>(false);
+  const { addUser } = useDatabase();
   const onSubmit = async (formData: FormData) => {
     setErrorRegister(false);
     setSuccessRegister(false);
     try {
-      const userCredential: UserCredential = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
+      const userCredential: UserCredential =
+        await createUserWithEmailAndPassword(
+          auth,
+          formData.email,
+          formData.password
+        );
+      await addUser(userCredential);
       setSuccessRegister(true);
       reset();
-      console.log(userCredential)
     } catch (err: any) {
       setErrorRegister(true);
       const errorMessage: string = getErrorFirebase(err);
