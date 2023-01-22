@@ -1,32 +1,62 @@
 import { Modal, Box, TextField, Button } from '@mui/material';
-import React, { SetStateAction, useEffect, useRef } from 'react';
+import React, { SetStateAction, useEffect, useRef, useState } from 'react';
 import styles from '@/styles/Home.module.css';
 import { STYLE_MODAL } from '@/constants/modal';
 import { LoadingButton } from '@mui/lab';
+import { Controller, useForm } from 'react-hook-form';
+import useAuth from '@/hooks/useAuth';
 export interface ModalJoinProps {
   open: boolean;
   setOpen: React.Dispatch<SetStateAction<boolean>>;
 }
-
+interface FormData {
+  room: string;
+}
 export function ModalJoin(props: ModalJoinProps) {
+  const {
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm({ defaultValues: { room: '' } });
   const handleClose = () => {
     props.setOpen(false);
+  };
+  const {router} = useAuth()
+  const onSubmit = (formData: FormData) => {
+    router.push(`/room/${formData.room}`)
   };
   return (
     <Modal open={props.open} onClose={handleClose}>
       <Box style={STYLE_MODAL}>
-        <Box className={styles.homeModalJoin}>
-          <TextField
-            placeholder="Room ID"
-            autoFocus={true}
-            fullWidth
-          />
+        <Box className={styles.homeModalJoin} sx={{ color: 'text.primary' }}>
+          <h2 style={{ textAlign: 'center' }}>JOIN ROOM</h2>
+            <Controller
+              name="room"
+              control={control}
+              rules={{ required: '*Room ID is required' }}
+              render={({ field: { onChange, value } }) => {
+                return (
+                  <TextField
+                    placeholder="Room ID"
+                    autoFocus={true}
+                    fullWidth
+                    value={value}
+                    onChange={onChange}
+                    disabled={isSubmitting}
+                    error={!!errors['room']}
+                    helperText={
+                      !!errors['room'] ? errors['room'].message?.toString() : ''
+                    }
+                  />
+                );
+              }}
+            />{' '}
           <Box className={styles.homeModalJoinActions}>
-            <LoadingButton variant="contained" size="large">
+            <LoadingButton loading={isSubmitting} onClick={handleSubmit(onSubmit)} variant="contained" size="large">
               Join
             </LoadingButton>
             <Button onClick={handleClose} variant="outlined" size="large">
-              Close
+              Cancel
             </Button>
           </Box>
         </Box>

@@ -1,11 +1,14 @@
+import { RoomContext } from '@/Contexts/roomContext';
 import { database } from '@/firebase';
 import { User, UserCredential } from 'firebase/auth';
 import { set, ref, push, child, update, get } from 'firebase/database';
 import { Router, useRouter } from 'next/router';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import useAuth from './useAuth';
 const useDatabase = () => {
   const { authContext } = useAuth();
+  const roomContext = useContext(RoomContext)
+  const {currentRoom} = roomContext
   const [loadingCreate, setLoadingCreate] = useState<boolean>(false);
   const [loadingRoom, setLoadingRoom] = useState<boolean>(true)
   const router = useRouter();
@@ -45,9 +48,9 @@ const useDatabase = () => {
       );
       if (snapshot.exists()) {
         const valueSnap = snapshot.val();
-        authContext.setCurrentRoom(valueSnap.roomId);
+        roomContext.setCurrentRoom(valueSnap);
       } else {
-        authContext.setCurrentRoom('');
+        roomContext.setCurrentRoom(null);
       }
     } catch (err) {
       console.log(err);

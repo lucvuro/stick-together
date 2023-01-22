@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '@/styles/Home.module.css';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -16,20 +16,22 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { ModalJoin } from '@/components/home/ModalJoin';
 import useDatabase from '@/hooks/useDatabase';
 import { LoadingButton } from '@mui/lab';
-import Link from 'next/link';
+import { RoomContext } from '@/Contexts/roomContext';
 
 export default function Home() {
   const { auth, authContext, router } = useAuth();
-  const { currentUser, currentRoom } = authContext;
+  const { currentUser } = authContext;
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
   const { createRoom, loadingCreate, getRoomFromUser, loadingRoom } =
     useDatabase();
+  const roomContext = useContext(RoomContext);
+  const {currentRoom} = roomContext
   const handleClickCreateRoom = async () => {
     await createRoom();
   };
   const handleClickRejoin = () => {
-    router.push(`/room/${currentRoom}`)
-  }
+    router.push(`/room/${currentRoom?.roomId}`);
+  };
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -111,10 +113,14 @@ export default function Home() {
                 ) : (
                   <>
                     <Box className={styles.homeRoomInfo}>
-                      <p>Your room is: {currentRoom}</p>
-                        <Button onClick={handleClickRejoin} sx={{ fontSize: '1.2rem' }} variant="contained">
-                          Re-join
-                        </Button>
+                      <p>Your room is: {currentRoom.roomId}</p>
+                      <Button
+                        onClick={handleClickRejoin}
+                        sx={{ fontSize: '1.2rem' }}
+                        variant="contained"
+                      >
+                        Re-join
+                      </Button>
                     </Box>
                   </>
                 )}
@@ -133,4 +139,9 @@ export default function Home() {
       </main>
     </>
   );
+}
+export async function getStaticProps() {
+  return {
+    props: {}, // will be passed to the page component as props
+  };
 }

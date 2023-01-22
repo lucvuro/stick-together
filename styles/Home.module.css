@@ -47,3 +47,20 @@
   justify-content: flex-end;
   gap: 2rem;
 }
+@media only screen and (max-width: 800px){
+  .homeContent{
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    min-width: 300px;
+  }
+  .homeModalJoin{
+    width: 300px;
+  }
+}
+@media only screen and (max-width: 280px){
+  .homeModalJoin{
+    width: 200px;
+  }
+}
