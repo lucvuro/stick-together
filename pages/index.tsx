@@ -22,16 +22,23 @@ export default function Home() {
   const { auth, authContext, router } = useAuth();
   const { currentUser } = authContext;
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
-  const { createRoom, loadingCreate, getRoomFromUser, loadingRoom } =
+  const { createRoom, loadingCreate, getRoomFromUser, loadingRoom, leaveRoomFromUser, loadingLeave } =
     useDatabase();
   const roomContext = useContext(RoomContext);
-  const {currentRoom} = roomContext
+  const { currentRoom } = roomContext;
   const handleClickCreateRoom = async () => {
     await createRoom();
   };
+  const [loadingRejoin, setLoadingRejoin] = useState<boolean>(false);
   const handleClickRejoin = () => {
+    setLoadingRejoin(true);
     router.push(`/room/${currentRoom?.roomId}`);
   };
+  const handleClickLeave = () => {
+    if(currentUser && currentRoom){
+      leaveRoomFromUser(currentUser, currentRoom)
+    }
+  }
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -114,13 +121,23 @@ export default function Home() {
                   <>
                     <Box className={styles.homeRoomInfo}>
                       <p>Your room is: {currentRoom.roomId}</p>
-                      <Button
+                      <LoadingButton
                         onClick={handleClickRejoin}
                         sx={{ fontSize: '1.2rem' }}
                         variant="contained"
+                        loading={loadingRejoin}
                       >
                         Re-join
-                      </Button>
+                      </LoadingButton>
+                      <LoadingButton
+                        color="error"
+                        onClick={handleClickLeave}
+                        sx={{ fontSize: '1.2rem' }}
+                        variant="contained"
+                        loading={loadingLeave}
+                      >
+                        Leave
+                      </LoadingButton>
                     </Box>
                   </>
                 )}

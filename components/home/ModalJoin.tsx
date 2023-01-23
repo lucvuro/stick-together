@@ -21,8 +21,10 @@ export function ModalJoin(props: ModalJoinProps) {
   const handleClose = () => {
     props.setOpen(false);
   };
+  const [loading, setLoading] = useState<boolean>(false)
   const {router} = useAuth()
   const onSubmit = (formData: FormData) => {
+    setLoading(true)
     router.push(`/room/${formData.room}`)
   };
   return (
@@ -52,7 +54,7 @@ export function ModalJoin(props: ModalJoinProps) {
               }}
             />{' '}
           <Box className={styles.homeModalJoinActions}>
-            <LoadingButton loading={isSubmitting} onClick={handleSubmit(onSubmit)} variant="contained" size="large">
+            <LoadingButton loading={loading} onClick={handleSubmit(onSubmit)} variant="contained" size="large">
               Join
             </LoadingButton>
             <Button onClick={handleClose} variant="outlined" size="large">

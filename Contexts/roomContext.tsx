@@ -5,9 +5,15 @@ export interface RoomContext {
   setCurrentRoom: React.Dispatch<React.SetStateAction<CurrentRoom | null>>;
 }
 export interface CurrentRoom {
-    roomId: string;
-    owner: string;
+    roomId: string | null;
+    owner: string | undefined;
     createdAt: string;
+    members: Member[] | null;
+}
+export interface Member {
+    uid: string | undefined;
+    email: string | undefined | null;
+    photoUrl: string | undefined | null;
 }
 const RoomContext = createContext<RoomContext>({
   currentRoom: null,
