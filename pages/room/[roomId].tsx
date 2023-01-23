@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
-import { child, get, onValue, ref } from 'firebase/database';
+import { onValue, ref } from 'firebase/database';
 import { GetStaticPropsContext } from 'next';
 import Head from 'next/head';
 import React, { useContext, useEffect, useState } from 'react';
@@ -30,7 +30,7 @@ export default function RoomDetail(props: RoomDetailProps) {
   const roomContext = useContext(RoomContext);
   const { currentRoom } = roomContext;
   const [open, setOpen] = useState<boolean>(false);
-  const {addUserToRoom} = useDatabase()
+  const { addUserToRoom } = useDatabase();
   const handleOk = () => {
     router.push('/');
   };
@@ -53,16 +53,28 @@ export default function RoomDetail(props: RoomDetailProps) {
   useEffect(() => {
     if (currentUser) {
       const unsub = onValue(ref(database, 'rooms/' + roomId), (snapshot) => {
-        const room: CurrentRoom | null= snapshot.val();
+        const room: CurrentRoom | null = snapshot.val();
         if (room) {
-          roomContext.setCurrentRoom(room)
-          if (!(room.members?.find((member: Member) => member.uid === currentUser.uid))){
+          roomContext.setCurrentRoom(room);
+          if (
+            (room.chats)
+          ) {
+            //If have chats on server but chats on client is empty
+            //Or have chats on server but not have room
+            const messages = Object.values(room.chats)
+            roomContext.setListMessage(messages);
+          }
+          if (
+            !room.members?.find(
+              (member: Member) => member.uid === currentUser.uid
+            )
+          ) {
             //Check if the currentUser is not in the room
-            addUserToRoom(currentUser, room)
+            addUserToRoom(currentUser, room);
           }
         } else {
           roomContext.setCurrentRoom(null);
-          setOpen(true)
+          setOpen(true);
         }
       });
       return () => unsub();
