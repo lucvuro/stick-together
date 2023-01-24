@@ -5,21 +5,25 @@ import { Box } from '@mui/material';
 import LoginForm from '@/components/login/LoginForm';
 import RegisterForm from '@/components/login/RegisterForm';
 import { onAuthStateChanged } from 'firebase/auth';
-import useAuth from '@/hooks/useAuth';
+import { auth } from '@/firebase';
+import { useRouter } from 'next/router';
 export interface LoginPageProps {}
 
 const Login = (props: LoginPageProps) => {
   const [loginShow, setLoginShow] = useState<boolean>(true);
-  const {router, auth, authContext} = useAuth()
-  useEffect (() => {
-    const unsub = onAuthStateChanged(auth,(user) => {
+  const router = useRouter()
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
-        authContext.setCurrentUser(user)
-        router.push('/')
+        if (router.pathname === '/login') {
+          router.push('/');
+        }
+      } else {
+        router.push('/login');
       }
-    })
-    return () => unsub()
-  },[])
+    });
+    return () => unsub();
+  }, []);
   return (
     <>
       <Head>
@@ -28,7 +32,7 @@ const Login = (props: LoginPageProps) => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
+      {<main className={styles.main}>
         <Box sx={{ color: 'text.primary' }}>
           {loginShow && (
             <>
@@ -73,7 +77,7 @@ const Login = (props: LoginPageProps) => {
             </>
           )}
         </Box>
-      </main>
+      </main>}
     </>
   );
 };

@@ -5,23 +5,16 @@ import Drawer from '@mui/material/Drawer';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
-import { User } from 'firebase/auth';
-import { CurrentRoom } from '@/Contexts/roomContext';
 import { ListMember } from './ListMember';
 import ChatComponent from './ChatComponent';
+import useUser from '@/hooks/useUser';
+import useRoom from '@/hooks/useRoom';
 
 const drawerWidth = 240;
 
@@ -74,8 +67,6 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-end',
 }));
 interface MainComponetProps {
-  currentUser: User | null;
-  currentRoom: CurrentRoom | null;
 }
 export default function MainComponent(props: MainComponetProps) {
   const theme = useTheme();
@@ -88,10 +79,11 @@ export default function MainComponent(props: MainComponetProps) {
   const handleDrawerClose = () => {
     setOpen(false);
   };
-  const { currentUser, currentRoom } = props;
+  const {currentUserApp} = useUser()
+  const {currentRoom} = useRoom()
   return (
     <>
-      {currentUser && currentRoom && <Box sx={{ display: 'flex' }}>
+      {currentUserApp && currentRoom && <Box sx={{ display: 'flex' }}>
         <CssBaseline />
         <AppBar position="fixed" open={open}>
           <Toolbar>
@@ -105,7 +97,7 @@ export default function MainComponent(props: MainComponetProps) {
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" noWrap component="div">
-              Room ID: {props.currentRoom?.roomId}
+              Room ID: {currentRoom.roomId}
             </Typography>
           </Toolbar>
         </AppBar>
@@ -132,7 +124,7 @@ export default function MainComponent(props: MainComponetProps) {
             </IconButton>
           </DrawerHeader>
           <Divider />
-          <ListMember listMember={props.currentRoom?.members}/>
+          <ListMember/>
         </Drawer>
         <Main open={open}>
           <DrawerHeader />

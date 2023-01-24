@@ -6,7 +6,7 @@ import {
   InputAdornment,
   TextField,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import PersonIcon from '@mui/icons-material/Person';
 import KeyIcon from '@mui/icons-material/Key';
 import styles from '@/styles/Login.module.css';
@@ -39,7 +39,7 @@ const RegisterForm: React.FunctionComponent<RegisterFormProps> = (props) => {
   const [errorRegister, setErrorRegister] = useState<boolean>(false);
   const [errorRegisterMessage, setErrorRegisterMessage] = useState<string>('');
   const [successRegister, setSuccessRegister] = useState<boolean>(false);
-  const { addUser } = useDatabase();
+  const { createUser } = useDatabase();
   const onSubmit = async (formData: FormData) => {
     setErrorRegister(false);
     setSuccessRegister(false);
@@ -50,7 +50,7 @@ const RegisterForm: React.FunctionComponent<RegisterFormProps> = (props) => {
           formData.email,
           formData.password
         );
-      await addUser(userCredential);
+      createUser(userCredential);
       setSuccessRegister(true);
       reset();
     } catch (err: any) {

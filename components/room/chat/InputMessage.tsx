@@ -11,13 +11,13 @@ import styles from '@/styles/Chat.module.css';
 import { CurrentRoom, Message, RoomContext } from '@/Contexts/roomContext';
 import useAuth from '@/hooks/useAuth';
 import useDatabase from '@/hooks/useDatabase';
+import useRoom from '@/hooks/useRoom';
+import useUser from '@/hooks/useUser';
 export interface InputMessageProps {}
 
 export function InputMessage(props: InputMessageProps) {
-  const { authContext } = useAuth();
-  const { currentUser } = authContext;
-  const roomContext = useContext(RoomContext);
-  const { currentRoom } = roomContext;
+  const {currentUserApp} = useUser()
+  const {currentRoom} = useRoom()
   const { addChatToRoom, loadingAdd } = useDatabase();
   const [message, setMessage] = useState<string>('');
   const handleOnChange = (
@@ -30,13 +30,14 @@ export function InputMessage(props: InputMessageProps) {
     e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>
   ) => {
     if (e.key === 'Enter') {
-      if (message && currentRoom && currentUser) {
+      if (message && currentRoom && currentUserApp) {
         const messageToSend: Message = {
           content: message,
           sender: {
-            uid: currentUser.uid,
-            email: currentUser.email,
-            photoUrl: currentUser.photoURL,
+            uid: currentUserApp.uid,
+            email: currentUserApp.email,
+            photoUrl: "",
+            isOnline: true
           },
           mid: '',
         };

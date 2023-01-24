@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import styles from '@/styles/Home.module.css';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -16,48 +16,58 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { ModalJoin } from '@/components/home/ModalJoin';
 import useDatabase from '@/hooks/useDatabase';
 import { LoadingButton } from '@mui/lab';
-import { RoomContext } from '@/Contexts/roomContext';
+import useUser from '@/hooks/useUser';
+import useRoom from '@/hooks/useRoom';
 
 export default function Home() {
-  const { auth, authContext, router } = useAuth();
-  const { currentUser } = authContext;
+  const { getUserAndSetUserApp } = useDatabase();
+  const { auth, router } = useAuth();
+  const { currentUserApp } = useUser();
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
-  const { createRoom, loadingCreate, getRoomFromUser, loadingRoom, leaveRoomFromUser, loadingLeave } =
-    useDatabase();
-  const roomContext = useContext(RoomContext);
-  const { currentRoom } = roomContext;
-  const handleClickCreateRoom = async () => {
-    await createRoom();
+  const {
+    createRoom,
+    loadingCreate,
+    getRoomFromUser,
+    loadingRoom,
+    leaveRoomFromUser,
+    loadingLeave,
+  } = useDatabase();
+  const { currentRoom } = useRoom();
+  const handleClickCreateRoom = () => {
+    if (currentUserApp) {
+      createRoom(currentUserApp);
+    }
   };
   const [loadingRejoin, setLoadingRejoin] = useState<boolean>(false);
   const handleClickRejoin = () => {
-    setLoadingRejoin(true);
-    router.push(`/room/${currentRoom?.roomId}`);
+    if (currentRoom) {
+      setLoadingRejoin(true);
+      router.push(`/room/${currentRoom.roomId}`);
+    }
   };
   const handleClickLeave = () => {
-    if(currentUser && currentRoom){
-      leaveRoomFromUser(currentUser, currentRoom)
+    if (currentUserApp && currentRoom) {
+      leaveRoomFromUser(currentUserApp, currentRoom);
     }
-  }
+  };
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
-        authContext.setCurrentUser(user);
+        getUserAndSetUserApp(user.uid);
+        if (router.pathname === '/login') {
+          router.push('/');
+        }
       } else {
-        authContext.setCurrentUser(null);
         router.push('/login');
       }
     });
     return () => unsub();
   }, []);
   useEffect(() => {
-    const getRoom = async () => {
-      if (currentUser) {
-        if (!currentRoom) await getRoomFromUser(currentUser);
-      }
-    };
-    getRoom();
-  }, [currentUser]);
+    if (currentUserApp) {
+      getRoomFromUser(currentUserApp.roomId);
+    }
+  }, [currentUserApp]);
   return (
     <>
       <Head>
@@ -69,7 +79,7 @@ export default function Home() {
       <main className={styles.main}>
         <Paper elevation={24} className={styles.homeContent}>
           <Box className={styles.homeProfile}>
-            {currentUser ? (
+            {currentUserApp ? (
               <>
                 <Image
                   className={styles.homeProfileAvatar}
@@ -84,7 +94,7 @@ export default function Home() {
                   </IconButton>
                 </Box>
                 <div className={styles.profileInfo}>
-                  <p>{currentUser?.email}</p>
+                  <p>{currentUserApp.email}</p>
                 </div>
               </>
             ) : (

@@ -1,48 +1,90 @@
-import { CurrentRoom, Member, Message, RoomContext } from '@/Contexts/roomContext';
+import {
+  CurrentRoom,
+  Member,
+  Message,
+  RoomContext,
+} from '@/Contexts/roomContext';
+import { UserApp } from '@/Contexts/userContext';
 import { database } from '@/firebase';
-import { User, UserCredential } from 'firebase/auth';
-import { set, ref, push, child, update, get, remove, onChildAdded } from 'firebase/database';
+import { onAuthStateChanged, User, UserCredential } from 'firebase/auth';
+import {
+  set,
+  ref,
+  push,
+  child,
+  update,
+  get,
+  remove,
+  onChildAdded,
+  DataSnapshot,
+  onValue,
+} from 'firebase/database';
 import { Router, useRouter } from 'next/router';
 import { useContext, useState } from 'react';
 import useAuth from './useAuth';
+import useRoom from './useRoom';
+import useUser from './useUser';
 const useDatabase = () => {
-  const { authContext } = useAuth();
   const roomContext = useContext(RoomContext);
-  const { currentRoom } = roomContext;
+  const { currentUserApp, setCurrentUserApp } = useUser();
+  const { setRoom } = useRoom();
   const [loadingCreate, setLoadingCreate] = useState<boolean>(false);
   const [loadingRoom, setLoadingRoom] = useState<boolean>(true);
   const [loadingLeave, setLoadingLeave] = useState<boolean>(false);
   const [loadingAdd, setLoadingAdd] = useState<boolean>(false);
   const router = useRouter();
-  const addUser = async (userCredential: UserCredential) => {
+  const createUser = async (userCredential: UserCredential) => {
     try {
       await set(ref(database, 'users/' + userCredential.user.uid), {
+        uid: userCredential.user.uid,
         email: userCredential.user.email,
+        photoUrl: '',
+        isOnline: false,
         roomId: '',
       });
     } catch (err) {
       console.log(err);
     }
   };
-  const createRoom = async () => {
+  const getUserAndSetUserApp = async (userId: string) => {
+    try {
+      const snapshot: DataSnapshot = await get(
+        child(ref(database), 'users/' + userId)
+      );
+      const user: UserApp = snapshot.val();
+      setCurrentUserApp(user);
+    } catch (err) {
+      console.log(err);
+      setCurrentUserApp(null);
+    }
+  };
+  //---Rooms
+  const getRoomAndSetRoom = async (roomId: string, callback: any) => {
+    try {
+      const snapshot: DataSnapshot = await get(
+        child(ref(database), 'rooms/' + roomId)
+      );
+      setRoom(snapshot.val(), callback);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const createRoom = async (currentUserApp: UserApp) => {
     setLoadingCreate(true);
     const newRoomKey = push(child(ref(database), 'rooms')).key;
-    const member: Member = {
-      uid: authContext.currentUser?.uid,
-      email: authContext.currentUser?.email,
-      photoUrl: authContext.currentUser?.photoURL,
-    };
     const currentRoom: CurrentRoom = {
       roomId: newRoomKey,
-      members: [member],
-      owner: authContext.currentUser?.uid,
+      owner: currentUserApp.uid,
       createdAt: new Date().toUTCString(),
+      chats: {},
+      members: {},
     };
     try {
       await set(ref(database, 'rooms/' + newRoomKey), currentRoom);
-      await update(ref(database, 'users/' + authContext.currentUser?.uid), {
+      await update(ref(database, 'users/' + currentUserApp.uid), {
         roomId: newRoomKey,
       });
+      addMemberToRoom(newRoomKey, currentUserApp);
       router.push(`/room/${newRoomKey}`);
     } catch (err) {
       console.log(err);
@@ -50,21 +92,13 @@ const useDatabase = () => {
       setLoadingCreate(false);
     }
   };
-  const getRoomFromUser = async (userCredential: User) => {
+  const getRoomFromUser = async (roomId: string) => {
     try {
-      const snapshot = await get(
-        child(ref(database), 'users/' + userCredential.uid)
-      );
-      if (snapshot.exists()) {
-        const valueSnap = snapshot.val(); //get roomId from user
-        if (valueSnap.roomId !== '') {
-          const roomFromDB = await get(
-            child(ref(database), 'rooms/' + valueSnap.roomId) //get room from DB with roomId(user)
-          );
-          roomContext.setCurrentRoom(roomFromDB.val());
-        }
-      } else {
-        roomContext.setCurrentRoom(null);
+      if (roomId) {
+        const roomFromDB = await get(
+          child(ref(database), 'rooms/' + roomId) //get room from DB with roomId(user)
+        );
+        roomContext.setCurrentRoom(roomFromDB.val());
       }
     } catch (err) {
       console.log(err);
@@ -73,12 +107,12 @@ const useDatabase = () => {
     }
   };
   const leaveRoomFromUser = async (
-    currentUser: User,
+    currentUserApp: UserApp,
     currentRoom: CurrentRoom
   ) => {
     setLoadingLeave(true);
     try {
-      await update(ref(database, 'users/' + currentUser.uid), {
+      await update(ref(database, 'users/' + currentUserApp.uid), {
         roomId: '',
       });
       roomContext.setCurrentRoom(null);
@@ -87,15 +121,15 @@ const useDatabase = () => {
       );
       if (roomFromDB.exists()) {
         const room: CurrentRoom = roomFromDB.val();
-        if (room.owner === currentUser.uid) {
+        if (room.owner === currentUserApp.uid) {
           await remove(ref(database, 'rooms/' + currentRoom.roomId));
         } else {
-          const members: Member[] | undefined = room.members?.filter(
-            (member: Member) => member.uid !== currentUser.uid
+          await remove(
+            ref(
+              database,
+              'rooms/' + currentRoom.roomId + '/members/' + currentUserApp.uid
+            )
           );
-          await update(ref(database, 'rooms/' + currentRoom.roomId), {
-            members: members,
-          });
         }
       }
     } catch (err) {
@@ -104,62 +138,92 @@ const useDatabase = () => {
       setLoadingLeave(false);
     }
   };
-  const addUserToRoom = async (currentUser: User, currentRoom: CurrentRoom) => {
-    setLoadingAdd(true)
-    try {
-      const roomFromDB = await get(
-        child(ref(database), 'rooms/' + currentRoom.roomId)
-      );
-      if (roomFromDB.exists()) {
-        const room: CurrentRoom = roomFromDB.val();
-        const member: Member = {
-          uid: currentUser.uid,
-          email: currentUser.email,
-          photoUrl: currentUser.photoURL,
-        };
-        const members: Member[] | null = room.members;
-        members?.push(member);
-        await update(ref(database, 'rooms/' + currentRoom.roomId), {
-          members: members,
+  const addMemberToRoom = async (
+    roomId: string | null,
+    currentUserApp: UserApp | null
+  ) => {
+    if (roomId && currentUserApp) {
+      const member: Member = {
+        uid: currentUserApp.uid,
+        email: currentUserApp.email,
+        photoUrl: "",
+        isOnline: currentUserApp.isOnline,
+      };
+      try {
+        await update(ref(database, 'users/' + currentUserApp.uid), {
+          roomId: roomId,
         });
-        await update(ref(database, 'users/' + currentUser.uid), {
-          roomId: currentRoom.roomId,
-        });
+        await set(
+          ref(database, 'rooms/' + roomId + '/members/' + currentUserApp.uid),
+          member
+        );
+      } catch (err) {
+        console.log(err);
       }
-    } catch (err) {
-      console.log(err)
-    } finally{
-      setLoadingAdd(false)
+    }
+  };
+  const setStatusMember = async (
+    roomId: string | null,
+    userId: string | null,
+    online: boolean
+  ) => {
+    if (roomId && userId) {
+      try {
+        await update(ref(database, 'rooms/' + roomId + '/members/' + userId), {
+          isOnline: online,
+        });
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
   const addChatToRoom = async (currentRoom: CurrentRoom, message: Message) => {
-    setLoadingAdd(true)
+    setLoadingAdd(true);
     try {
       const roomFromDB = await get(
         child(ref(database), 'rooms/' + currentRoom.roomId)
       );
       if (roomFromDB.exists()) {
-        const newChatKey = push(child(ref(database), 'rooms/' + currentRoom.roomId + '/chats')).key;
-        await set(ref(database, 'rooms/' + currentRoom.roomId + '/chats/' + newChatKey), {...message, mid: newChatKey});
+        const newChatKey = push(
+          child(ref(database), 'rooms/' + currentRoom.roomId + '/chats')
+        ).key;
+        await set(
+          ref(database, 'rooms/' + currentRoom.roomId + '/chats/' + newChatKey),
+          { ...message, mid: newChatKey }
+        );
       }
     } catch (err) {
-      console.log(err)
-    } finally{
-      setLoadingAdd(false)
+      console.log(err);
+    } finally {
+      setLoadingAdd(false);
     }
   };
+  //---Rooms
+
+  //--Custom firebase
+  const onValueCustom = (path: string, callback: any) => {
+    return onValue(ref(database, path), (snapshot: DataSnapshot) => {
+      callback(snapshot.val())
+    })
+  }
+  //--Custom firebase
   return {
     database,
-    addUser,
+    createUser,
+    getUserAndSetUserApp,
     createRoom,
+    getRoomAndSetRoom,
     getRoomFromUser,
     leaveRoomFromUser,
-    addUserToRoom,
+    // addUserToRoom,
     addChatToRoom,
+    addMemberToRoom,
+    onValueCustom,
+    setStatusMember,
     loadingCreate,
     loadingRoom,
     loadingLeave,
-    loadingAdd
+    loadingAdd,
   };
 };
 export default useDatabase;
