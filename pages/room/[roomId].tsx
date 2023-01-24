@@ -1,6 +1,5 @@
 import MainComponent from '@/components/room/MainComponent';
 import { CurrentRoom, Member, RoomContext } from '@/Contexts/roomContext';
-import { database } from '@/firebase';
 import useAuth from '@/hooks/useAuth';
 import {
   Box,
@@ -20,15 +19,15 @@ import styles from '@/styles/Room.module.css';
 import useDatabase from '@/hooks/useDatabase';
 import useRoom from '@/hooks/useRoom';
 import useUser from '@/hooks/useUser';
-export interface RoomDetailProps {
+interface RoomDetailProps {
   currentRoom: CurrentRoom;
 }
-
+let socket: any;
 export default function RoomDetail(props: RoomDetailProps) {
   const { auth, router } = useAuth();
   const { currentUserApp } = useUser();
   const { roomId } = router.query;
-  const { currentRoom} = useRoom();
+  const { currentRoom } = useRoom();
   const [open, setOpen] = useState<boolean>(false);
   const [openAlreadyRoom, setOpenAlreadyRoom] = useState<boolean>(false);
   const {
@@ -61,16 +60,32 @@ export default function RoomDetail(props: RoomDetailProps) {
   }, [currentUserApp]);
   useEffect(() => {
     if (currentRoom && currentUserApp) {
-      if (currentUserApp.roomId && currentRoom.roomId !== currentUserApp.roomId) {
+      if (
+        currentUserApp.roomId &&
+        currentRoom.roomId !== currentUserApp.roomId
+      ) {
         //Check if user have already another room
         setOpenAlreadyRoom(true);
         return;
       }
       if (!Object.keys(currentRoom.members).includes(currentUserApp.uid)) {
-        //If user is not a member in that room
+        //If user is not a member in room
         addMemberToRoom(currentRoom.roomId, currentUserApp);
+      } else {
+        //If user is a member in room
+        setStatusMember(currentRoom.roomId, currentUserApp.uid, true);
       }
     }
+    window.addEventListener('beforeunload', () => {
+      if (currentUserApp && currentRoom) {
+        setStatusMember(currentRoom.roomId, currentUserApp.uid, false);
+      }
+    });
+    return () => {
+      if (currentUserApp && currentRoom) {
+        setStatusMember(currentRoom.roomId, currentUserApp.uid, false);
+      }
+    };
   }, [currentRoom]);
   return (
     <>
