@@ -88,7 +88,7 @@ export function ListMember(props: ListMemberProps) {
           });
           peer = new Peer(currentUserApp.uid, {
             host: process.env.NEXT_PUBLIC_HOST,
-            port: 8080,
+            port: 80,
             path: 'api/peerjs',
           });
           listMember.forEach((member: Member) => {
@@ -96,7 +96,7 @@ export function ListMember(props: ListMemberProps) {
               const call = peer.call(member.uid, mediaStream, {
                 metadata: {
                   host: process.env.NEXT_PUBLIC_HOST,
-                  port: 8080,
+                  port: 80,
                   path: 'api/peerjs',
                 },
               });
