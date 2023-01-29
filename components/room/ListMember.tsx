@@ -87,7 +87,7 @@ export function ListMember(props: ListMemberProps) {
             audio: true,
           });
           peer = new Peer(currentUserApp.uid, {
-            host: 'localhost',
+            host: process.env.NEXT_PUBLIC_HOST,
             port: 9000,
             path: 'api/peerjs',
           });
@@ -95,7 +95,7 @@ export function ListMember(props: ListMemberProps) {
             if (member.uid && member.isOnline) {
               const call = peer.call(member.uid, mediaStream, {
                 metadata: {
-                  host: 'localhost',
+                  host: process.env.NEXT_PUBLIC_HOST,
                   port: 9000,
                   path: 'api/peerjs',
                 },
