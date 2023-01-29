@@ -1,0 +1,32 @@
+.message {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 1.5rem;
+}
+.message:hover {
+    background: black;
+  }
+.messageContent {
+  display: flex;
+  flex-direction: column;
+}
+.messageText {
+  opacity: 0.7;
+}
+.chat {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: calc(100vh - 64px - 56px + 2rem);
+}
+.chatListMessage {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 64px - 56px - 2rem);
+  overflow: auto;
+}
+.inputMessage{
+    padding: 0 2rem;
+}
