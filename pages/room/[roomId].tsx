@@ -22,7 +22,6 @@ import useUser from '@/hooks/useUser';
 interface RoomDetailProps {
   currentRoom: CurrentRoom;
 }
-let socket: any;
 export default function RoomDetail(props: RoomDetailProps) {
   const { auth, router } = useAuth();
   const { currentUserApp } = useUser();
@@ -39,6 +38,11 @@ export default function RoomDetail(props: RoomDetailProps) {
   const handleOk = () => {
     router.push('/');
   };
+  // function playStream(stream: MediaStream) {
+  //   const audio = document.createElement("audio")
+  //   audio.src = (URL || webkitURL).createObjectURL(stream);
+  //   document.body.appendChild(audio)
+  // }
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -54,7 +58,7 @@ export default function RoomDetail(props: RoomDetailProps) {
     return () => unsub();
   }, []);
   useEffect(() => {
-    if (currentUserApp) {
+    if (currentUserApp && !currentRoom) {
       getRoomAndSetRoom(String(roomId), setOpen);
     }
   }, [currentUserApp]);
@@ -72,17 +76,20 @@ export default function RoomDetail(props: RoomDetailProps) {
         //If user is not a member in room
         addMemberToRoom(currentRoom.roomId, currentUserApp);
       } else {
-        //If user is a member in room
+        //If user is a member in room set status to online
         setStatusMember(currentRoom.roomId, currentUserApp.uid, true);
       }
     }
     window.addEventListener('beforeunload', () => {
+      //Close browser wiill set status to offline
       if (currentUserApp && currentRoom) {
         setStatusMember(currentRoom.roomId, currentUserApp.uid, false);
       }
     });
     return () => {
-      if (currentUserApp && currentRoom) {
+      if (currentUserApp && currentRoom && currentRoom.roomId) {
+        //Component unmount will set status to offline
+        //because member is not in room
         setStatusMember(currentRoom.roomId, currentUserApp.uid, false);
       }
     };
