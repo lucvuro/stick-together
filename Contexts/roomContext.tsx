@@ -5,8 +5,12 @@ export interface RoomContext {
   setRoom: (room: CurrentRoom | null, setDialog: React.Dispatch<React.SetStateAction<boolean>>) => void;
   listMessage: Message[];
   listMember: Member[]
+  mediaStream: MediaStream | null;
   setListMessage: React.Dispatch<React.SetStateAction<Message[]>>;
   setListMember: React.Dispatch<React.SetStateAction<Member[]>>;
+  setMediaStream: React.Dispatch<React.SetStateAction<MediaStream | null>>;
+  setAudiosFromPeer: (audio: HTMLAudioElement) => void;
+  muteAllAudio: (mute: boolean) => void;
 }
 export interface CurrentRoom {
   roomId: string | null;
@@ -33,14 +37,20 @@ const RoomContext = createContext<RoomContext>({
   setRoom: () => {},
   listMessage: [],
   listMember: [],
+  mediaStream: null,
   setListMessage: () => {},
-  setListMember: () => {}
+  setListMember: () => {},
+  setMediaStream: () => {},
+  setAudiosFromPeer: () => {},
+  muteAllAudio: () => {}
 });
 const { Provider } = RoomContext;
 const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [currentRoom, setCurrentRoom] = useState<CurrentRoom | null>(null);
   const [listMessage, setListMessage] = useState<Message[]>([]);
   const [listMember, setListMember] = useState<Member[]>([])
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null)
+  const [listAudio, setListAudio] = useState<HTMLAudioElement[]>([])
   const setRoom = (room: CurrentRoom | null, setDialog: React.Dispatch<React.SetStateAction<boolean>>) => {
     if (room) {
       setCurrentRoom(room);
@@ -61,6 +71,14 @@ const RoomProvider = ({ children }: { children: ReactNode }) => {
       setCurrentRoom(null);
     }
   }
+  const setAudiosFromPeer = (audio: HTMLAudioElement) => {
+    setListAudio([...listAudio, audio])
+  }
+  const muteAllAudio = (mute: boolean) => {
+    listAudio.map((audio: HTMLAudioElement, peer, audios) => {
+      audios[peer].muted = mute
+    })
+  }
   return (
     <Provider
       value={{
@@ -69,8 +87,12 @@ const RoomProvider = ({ children }: { children: ReactNode }) => {
         setRoom,
         listMessage,
         listMember,
+        mediaStream,
         setListMessage,
-        setListMember
+        setListMember,
+        setMediaStream,
+        setAudiosFromPeer,
+        muteAllAudio,
       }}
     >
       {children}

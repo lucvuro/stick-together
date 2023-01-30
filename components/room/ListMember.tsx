@@ -17,7 +17,7 @@ import useUser from '@/hooks/useUser';
 import { MediaConnection } from 'peerjs';
 export interface ListMemberProps {}
 export function ListMember(props: ListMemberProps) {
-  const { listMember, setListMember, currentRoom } = useRoom();
+  const { listMember, setListMember, currentRoom, setMediaStream, setAudiosFromPeer } = useRoom();
   const { onValueCustom, setPeerIdToMember } = useDatabase();
   const { currentUserApp } = useUser();
   const StyledBadgeOnline = styled(Badge)(({ theme }) => ({
@@ -86,14 +86,18 @@ export function ListMember(props: ListMemberProps) {
             video: false,
             audio: true,
           });
+          mediaStream.getAudioTracks()[0].enabled = false
+          console.log(mediaStream.id)
+          setMediaStream(mediaStream)
           peer = new Peer();
-          console.log(peer);
           peer.on('call', (call: MediaConnection) => {
             call.answer(mediaStream);
             call.on('stream', (remoteStream: MediaStream) => {
               const audio = new Audio();
               audio.autoplay = true;
               audio.srcObject = remoteStream;
+              audio.id = remoteStream.id
+              setAudiosFromPeer(audio)
             });
           });
           peer.on('error', (err: any) => {
@@ -114,6 +118,8 @@ export function ListMember(props: ListMemberProps) {
                   const audio = new Audio();
                   audio.autoplay = true;
                   audio.srcObject = remoteStream;
+                  audio.id = remoteStream.id
+                  setAudiosFromPeer(audio)
                 });
                 call.on('error', (error: any) => {
                   console.log('error', error);

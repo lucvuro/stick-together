@@ -15,6 +15,7 @@ import { ListMember } from './ListMember';
 import ChatComponent from './ChatComponent';
 import useUser from '@/hooks/useUser';
 import useRoom from '@/hooks/useRoom';
+import { UserControl } from './UserControl';
 
 const drawerWidth = 240;
 
@@ -22,7 +23,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
   open?: boolean;
 }>(({ theme, open }) => ({
   flexGrow: 1,
-//   padding: theme.spacing(3),
+  //   padding: theme.spacing(3),
   transition: theme.transitions.create('margin', {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
@@ -66,8 +67,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   ...theme.mixins.toolbar,
   justifyContent: 'flex-end',
 }));
-interface MainComponetProps {
-}
+interface MainComponetProps {}
 export default function MainComponent(props: MainComponetProps) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(true);
@@ -79,58 +79,64 @@ export default function MainComponent(props: MainComponetProps) {
   const handleDrawerClose = () => {
     setOpen(false);
   };
-  const {currentUserApp} = useUser()
-  const {currentRoom} = useRoom()
+  const { currentUserApp } = useUser();
+  const { currentRoom } = useRoom();
   return (
     <>
-      {currentUserApp && currentRoom && <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
-        <AppBar position="fixed" open={open}>
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
-              edge="start"
-              sx={{ mr: 2, ...(open && { display: 'none' }) }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" noWrap component="div">
-              Room ID: {currentRoom.roomId}
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          sx={{
-            width: drawerWidth,
-            flexShrink: 0,
-            '& .MuiDrawer-paper': {
+      {currentUserApp && currentRoom && (
+        <Box sx={{ display: 'flex' }}>
+          <CssBaseline />
+          <AppBar position="fixed" open={open}>
+            <Toolbar>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="start"
+                sx={{ mr: 2, ...(open && { display: 'none' }) }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" noWrap component="div">
+                Room ID: {currentRoom.roomId}
+              </Typography>
+            </Toolbar>
+          </AppBar>
+          <Drawer
+            sx={{
               width: drawerWidth,
-              boxSizing: 'border-box',
-            },
-          }}
-          variant="persistent"
-          anchor="left"
-          open={open}
-        >
-          <DrawerHeader>
-            <IconButton onClick={handleDrawerClose}>
-              {theme.direction === 'ltr' ? (
-                <ChevronLeftIcon />
-              ) : (
-                <ChevronRightIcon />
-              )}
-            </IconButton>
-          </DrawerHeader>
-          <Divider />
-          <ListMember/>
-        </Drawer>
-        <Main open={open}>
-          <DrawerHeader />
-          <ChatComponent/>
-        </Main>
-      </Box>}
+              flexShrink: 0,
+              '& .MuiDrawer-paper': {
+                width: drawerWidth,
+                boxSizing: 'border-box',
+                justifyContent: 'space-between',
+              },
+            }}
+            variant="persistent"
+            anchor="left"
+            open={open}
+          >
+            <Box>
+              <DrawerHeader>
+                <IconButton onClick={handleDrawerClose}>
+                  {theme.direction === 'ltr' ? (
+                    <ChevronLeftIcon />
+                  ) : (
+                    <ChevronRightIcon />
+                  )}
+                </IconButton>
+              </DrawerHeader>
+              <Divider />
+              <ListMember />
+            </Box>
+            <UserControl />
+          </Drawer>
+          <Main open={open}>
+            <DrawerHeader />
+            <ChatComponent />
+          </Main>
+        </Box>
+      )}
     </>
   );
 }

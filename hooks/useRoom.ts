@@ -11,6 +11,10 @@ const useRoom = () => {
     setListMessage,
     listMember,
     setListMember,
+    mediaStream,
+    setMediaStream,
+    setAudiosFromPeer,
+    muteAllAudio,
   } = roomContext;
   return {
     currentRoom,
@@ -20,6 +24,10 @@ const useRoom = () => {
     setListMessage,
     listMember,
     setListMember,
+    mediaStream,
+    setMediaStream,
+    setAudiosFromPeer,
+    muteAllAudio,
   };
 };
 export default useRoom;
