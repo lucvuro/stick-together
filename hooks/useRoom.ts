@@ -10,7 +10,7 @@ const useRoom = () => {
     listMessage,
     setListMessage,
     listMember,
-    setListMember
+    setListMember,
   } = roomContext;
   return {
     currentRoom,
@@ -19,7 +19,7 @@ const useRoom = () => {
     listMessage,
     setListMessage,
     listMember,
-    setListMember
+    setListMember,
   };
 };
 export default useRoom;

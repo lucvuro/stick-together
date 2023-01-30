@@ -20,6 +20,7 @@ export interface Member {
   email: string | undefined | null;
   photoUrl: string | undefined | null;
   isOnline: boolean;
+  peerId?: string;
 }
 export interface Message {
   content: string;

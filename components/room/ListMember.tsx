@@ -18,7 +18,7 @@ import { MediaConnection } from 'peerjs';
 export interface ListMemberProps {}
 export function ListMember(props: ListMemberProps) {
   const { listMember, setListMember, currentRoom } = useRoom();
-  const { onValueCustom } = useDatabase();
+  const { onValueCustom, setPeerIdToMember } = useDatabase();
   const { currentUserApp } = useUser();
   const StyledBadgeOnline = styled(Badge)(({ theme }) => ({
     '& .MuiBadge-badge': {
@@ -86,33 +86,9 @@ export function ListMember(props: ListMemberProps) {
             video: false,
             audio: true,
           });
-          peer = new Peer(currentUserApp.uid, {
-            host: process.env.NEXT_PUBLIC_HOST,
-            port: 80,
-            path: 'api/peerjs',
-          });
-          listMember.forEach((member: Member) => {
-            if (member.uid && member.isOnline) {
-              const call = peer.call(member.uid, mediaStream, {
-                metadata: {
-                  host: process.env.NEXT_PUBLIC_HOST,
-                  port: 80,
-                  path: 'api/peerjs',
-                },
-              });
-              call.on('stream', (remoteStream: MediaStream) => {
-                console.log('remote', remoteStream);
-                const audio = new Audio();
-                audio.autoplay = true;
-                audio.srcObject = remoteStream;
-              });
-              call.on('error', (error: any) => {
-                console.log('error call', error);
-              });
-            }
-          });
+          peer = new Peer();
+          console.log(peer);
           peer.on('call', (call: MediaConnection) => {
-            console.log('call', call);
             call.answer(mediaStream);
             call.on('stream', (remoteStream: MediaStream) => {
               const audio = new Audio();
@@ -121,10 +97,29 @@ export function ListMember(props: ListMemberProps) {
             });
           });
           peer.on('error', (err: any) => {
-            console.log('error', err.type);
+            console.log('error', err);
           });
           peer.on('open', (id: string) => {
-            console.log('open', id);
+            if (currentRoom?.roomId) {
+              setPeerIdToMember(currentRoom?.roomId, currentUserApp.uid, id);
+            }
+            listMember.forEach((member: Member) => {
+              if (
+                member.peerId &&
+                member.isOnline &&
+                member.uid !== currentUserApp.uid
+              ) {
+                const call = peer.call(member.peerId, mediaStream);
+                call.on('stream', (remoteStream: MediaStream) => {
+                  const audio = new Audio();
+                  audio.autoplay = true;
+                  audio.srcObject = remoteStream;
+                });
+                call.on('error', (error: any) => {
+                  console.log('error', error);
+                });
+              }
+            });
           });
         }
       };
