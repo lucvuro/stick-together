@@ -164,7 +164,7 @@ export function ListMember(props: ListMemberProps) {
                   <Avatar sx={{ width: 36, height: 36 }}>V</Avatar>
                 </StyledBadgeOffline>
               )}
-              <ListItemText primary={member.email} />
+              <ListItemText primary={member.email} primaryTypographyProps={{noWrap: true}}/>
             </ListItemButton>
           </ListItem>
         ))}
