@@ -9,14 +9,17 @@ import {
   ListItemText,
 } from '@mui/material';
 import React, { useEffect } from 'react';
-import { Member} from '@/Contexts/roomContext';
+import { Member } from '@/Contexts/roomContext';
 import { styled } from '@mui/material/styles';
 import useRoom from '@/hooks/useRoom';
 import useDatabase from '@/hooks/useDatabase';
+import useUser from '@/hooks/useUser';
+import { MediaConnection } from 'peerjs';
 export interface ListMemberProps {}
 export function ListMember(props: ListMemberProps) {
-  const {listMember, setListMember, currentRoom} = useRoom()
-  const {onValueCustom} = useDatabase()
+  const { listMember, setListMember, currentRoom, setMediaStream, setAudiosFromPeer } = useRoom();
+  const { onValueCustom, setPeerIdToMember } = useDatabase();
+  const { currentUserApp } = useUser();
   const StyledBadgeOnline = styled(Badge)(({ theme }) => ({
     '& .MuiBadge-badge': {
       backgroundColor: '#44b700',
@@ -63,13 +66,81 @@ export function ListMember(props: ListMemberProps) {
     },
   }));
   useEffect(() => {
-    const unsub = onValueCustom(`rooms/${currentRoom?.roomId}/members`, (members: Object) => {
-      if(members){
-        setListMember(Object.values(members))
+    const unsub = onValueCustom(
+      `rooms/${currentRoom?.roomId}/members`,
+      (members: Object) => {
+        if (members) {
+          setListMember(Object.values(members));
+        }
       }
-    })
-    return () => unsub()
-  },[])
+    );
+    return () => unsub();
+  }, []);
+  useEffect(() => {
+    let peer: any;
+    import('peerjs').then(({ default: Peer }) => {
+      // normal synchronous code
+      const getMediaStream = async () => {
+        if (currentUserApp && currentUserApp.uid) {
+          const mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: false,
+            audio: true,
+          });
+          mediaStream.getAudioTracks()[0].enabled = false
+          console.log(mediaStream.id)
+          setMediaStream(mediaStream)
+          peer = new Peer();
+          peer.on('call', (call: MediaConnection) => {
+            call.answer(mediaStream);
+            call.on('stream', (remoteStream: MediaStream) => {
+              const audio = new Audio();
+              audio.autoplay = true;
+              audio.srcObject = remoteStream;
+              audio.id = remoteStream.id
+              setAudiosFromPeer(audio)
+            });
+          });
+          peer.on('error', (err: any) => {
+            console.log('error', err);
+          });
+          peer.on('open', (id: string) => {
+            if (currentRoom?.roomId) {
+              setPeerIdToMember(currentRoom?.roomId, currentUserApp.uid, id);
+            }
+            listMember.forEach((member: Member) => {
+              if (
+                member.peerId &&
+                member.isOnline &&
+                member.uid !== currentUserApp.uid
+              ) {
+                const call = peer.call(member.peerId, mediaStream);
+                call.on('stream', (remoteStream: MediaStream) => {
+                  const audio = new Audio();
+                  audio.autoplay = true;
+                  audio.srcObject = remoteStream;
+                  audio.id = remoteStream.id
+                  setAudiosFromPeer(audio)
+                });
+                call.on('error', (error: any) => {
+                  console.log('error', error);
+                });
+              }
+            });
+          });
+        }
+      };
+      getMediaStream();
+    });
+    window.addEventListener('beforeunload', () => {
+      //Close browser wiill set status to offline
+      if (peer) {
+        peer.destroy();
+      }
+    });
+    return () => {
+      if (peer) peer.destroy();
+    };
+  }, [currentUserApp]);
   return (
     <>
       <List>

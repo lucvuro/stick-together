@@ -1,0 +1,15 @@
+.userControl{
+    padding: 1rem .5rem;
+    display: flex;
+    justify-content: space-between;
+}
+.userControlInfo{
+    display: flex;
+    align-items: center;
+    /* gap: .5rem; */
+    width: 110px;
+}
+.userControlActions{
+    display: flex;
+    align-items: center;
+}

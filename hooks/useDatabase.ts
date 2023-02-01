@@ -198,6 +198,21 @@ const useDatabase = () => {
       setLoadingAdd(false);
     }
   };
+  const setPeerIdToMember = async (
+    roomId: string | null,
+    userId: string | null,
+    peerId: string
+  ) => {
+    if (roomId && userId) {
+      try {
+        await update(ref(database, 'rooms/' + roomId + '/members/' + userId), {
+          peerId: peerId,
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  };
   //---Rooms
 
   //--Custom firebase
@@ -220,6 +235,7 @@ const useDatabase = () => {
     addMemberToRoom,
     onValueCustom,
     setStatusMember,
+    setPeerIdToMember,
     loadingCreate,
     loadingRoom,
     loadingLeave,
