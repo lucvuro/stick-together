@@ -15,12 +15,14 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import MicOffIcon from '@mui/icons-material/MicOff';
 import HeadsetOffIcon from '@mui/icons-material/HeadsetOff';
 import useRoom from '@/hooks/useRoom';
+import useUser from '@/hooks/useUser';
 export interface UserControlProps {}
 
 export function UserControl(props: UserControlProps) {
   const [mic, setMic] = useState<boolean>(false);
   const [headset, setHeadSet] = useState<boolean>(true);
   const { mediaStream, muteAllAudio } = useRoom();
+  const {currentUserApp} = useUser()
   const setMuteMediaStream = (mute: boolean) => {
     if (mediaStream) {
       mediaStream.getAudioTracks()[0].enabled = mute;
@@ -47,7 +49,7 @@ export function UserControl(props: UserControlProps) {
             <Button sx={{ display: 'flex', gap: '.5rem' }}>
               <Avatar sx={{ width: 36, height: 36 }}>V</Avatar>
               <Typography variant="body2" noWrap sx={{ textTransform: 'none' }}>
-                Nameeeeeeee
+                {currentUserApp?.email}
               </Typography>
             </Button>
           </Box>
