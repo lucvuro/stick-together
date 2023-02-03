@@ -1,0 +1,12 @@
+.mainMusicBox{
+    display: flex;
+    gap: 1.5rem;
+}
+.musicBoxLeftContent{
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+.musicBoxItem{
+    display: flex;
+}

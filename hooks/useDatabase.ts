@@ -64,7 +64,8 @@ const useDatabase = () => {
       const snapshot: DataSnapshot = await get(
         child(ref(database), 'rooms/' + roomId)
       );
-      setRoom(snapshot.val(), callback);
+      const roomResult: CurrentRoom = snapshot.val();
+      setRoom(roomResult, callback);
     } catch (err) {
       console.log(err);
     }
@@ -146,7 +147,7 @@ const useDatabase = () => {
       const member: Member = {
         uid: currentUserApp.uid,
         email: currentUserApp.email,
-        photoUrl: "",
+        photoUrl: '',
         isOnline: currentUserApp.isOnline,
       };
       try {
@@ -218,9 +219,9 @@ const useDatabase = () => {
   //--Custom firebase
   const onValueCustom = (path: string, callback: any) => {
     return onValue(ref(database, path), (snapshot: DataSnapshot) => {
-      callback(snapshot.val())
-    })
-  }
+      callback(snapshot.val());
+    });
+  };
   //--Custom firebase
   return {
     database,

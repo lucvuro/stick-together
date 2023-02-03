@@ -16,12 +16,15 @@ import ChatComponent from './ChatComponent';
 import useUser from '@/hooks/useUser';
 import useRoom from '@/hooks/useRoom';
 import { UserControl } from './UserControl';
-
+import { Fab } from '@mui/material';
+import useMusicBox from '@/hooks/useMusicBox';
+import { MusicBoxModal } from './chat/MusicBoxModal';
 const drawerWidth = 240;
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
   open?: boolean;
 }>(({ theme, open }) => ({
+  position: 'relative',
   flexGrow: 1,
   //   padding: theme.spacing(3),
   transition: theme.transitions.create('margin', {
@@ -81,6 +84,7 @@ export default function MainComponent(props: MainComponetProps) {
   };
   const { currentUserApp } = useUser();
   const { currentRoom } = useRoom();
+  const { openMusicBox, setOpenMusicBox } = useMusicBox();
   return (
     <>
       {currentUserApp && currentRoom && (
@@ -134,6 +138,7 @@ export default function MainComponent(props: MainComponetProps) {
           <Main open={open}>
             <DrawerHeader />
             <ChatComponent />
+            <MusicBoxModal />
           </Main>
         </Box>
       )}

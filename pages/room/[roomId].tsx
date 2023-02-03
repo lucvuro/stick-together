@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Fab,
 } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
 import { GetStaticPropsContext } from 'next';
