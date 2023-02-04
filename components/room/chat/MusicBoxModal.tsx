@@ -1,4 +1,11 @@
-import { Box, Button, Fab, Modal } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Fab,
+  Modal,
+  Typography,
+} from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import MusicOffIcon from '@mui/icons-material/MusicOff';
@@ -22,32 +29,30 @@ export function MusicBoxModal(props: MusicBoxModalProps) {
     }
   };
   const connectToMusicBox = () => {
-    if (!connected && currentRoom) {
+    if (!connected && currentRoom && !audio) {
       const audio = new Audio();
-      audio.src = `http://localhost:8080/stream/${currentRoom.roomId}/view`;
+      audio.src = `${process.env.NEXT_PUBLIC_APILINK}/stream/${currentRoom.roomId}/view`;
       audio.volume = 0.8;
       audio.play();
-      setConnected(true);
-      setOpenMusicBox(true)
+      audio.addEventListener('canplay', (e) => {
+        setConnected(true);
+      });
       setAudio(audio);
     }
+    setOpenMusicBox(true);
   };
+  useEffect(() => {
+    if (audio) {
+      return () => {
+        audio.removeEventListener('canplay', (e) => {
+          setConnected(true);
+        });
+      };
+    }
+  }, [audio]);
   return (
     <>
-      {!openMusicBox && connected && (
-        <Box sx={{ position: 'absolute', bottom: '16px', right: '16px' }}>
-          <Fab
-            color="primary"
-            aria-label="music-box"
-            onClick={() => {
-              setOpenMusicBox(true);
-            }}
-          >
-            <MusicNoteIcon />
-          </Fab>
-        </Box>
-      )}
-      {!openMusicBox && !connected && (
+      {!openMusicBox && (
         <Box sx={{ position: 'absolute', bottom: '16px', right: '16px' }}>
           <Fab
             color="primary"
@@ -56,7 +61,7 @@ export function MusicBoxModal(props: MusicBoxModalProps) {
               connectToMusicBox();
             }}
           >
-            <MusicOffIcon />
+            <MusicNoteIcon />
           </Fab>
         </Box>
       )}
@@ -65,40 +70,28 @@ export function MusicBoxModal(props: MusicBoxModalProps) {
         onClose={() => setOpenMusicBox(false)}
         open={openMusicBox}
       >
-        <Box sx={STYLE_MODAL}>
-          <MusicBox setVolumeAudio={setVolumeAudio} volume={volume} />
-        </Box>
-        {/* {connected ? (
+        {connected ? (
           <Box sx={STYLE_MODAL}>
-            <MusicBox setVolumeAudio={setVolumeAudio} volume={volume}/>
+            <MusicBox setVolumeAudio={setVolumeAudio} volume={volume} />
           </Box>
         ) : (
-          <>
-            <Box sx={STYLE_MODAL}>
-              <Button
-                onClick={() => {
-                  if (currentRoom) {
-                    const audio = new Audio();
-                    audio.src = `http://localhost:8080/stream/${currentRoom.roomId}/view`;
-                    audio.volume=0.8
-                    audio.play();
-                    setConnected(true);
-                    setAudio(audio)
-                  }
-                }}
-              >
-                Connect to Musicbox
-              </Button>
+          <Box sx={STYLE_MODAL}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: { md: '730px', xs: '250px' },
+                height: { md: '300px' },
+              }}
+            >
+              <Typography>Connecting to Music Box...</Typography>
+              <CircularProgress sx={{mt: '1rem'}}/>
             </Box>
-          </>
-        )} */}
+          </Box>
+        )}
       </Modal>
-      {/* {currentRoom && currentRoom.roomId && <audio id="music-box-player" autoPlay>
-        <source
-          src={url}
-          type="audio/mpeg"
-        />
-      </audio>} */}
     </>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { styled, useTheme } from '@mui/material/styles';
+import { keyframes, styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Slider from '@mui/material/Slider';
@@ -17,6 +17,7 @@ import useRoom from '@/hooks/useRoom';
 import { Song } from '@/Contexts/musicboxContext';
 import Image from 'next/image';
 import defaultMusic from '@/assets/images/defaultMusic.jpeg'
+import zIndex from '@mui/material/styles/zIndex';
 
 const WallPaper = styled('div')({
   position: 'absolute',
@@ -62,16 +63,26 @@ const Widget = styled('div')(({ theme }) => ({
     theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.4)',
   backdropFilter: 'blur(40px)',
 }));
+const spin = keyframes`
+  0% {
+    transform: rotate(0deg)
+  }
+  100% {
+    transform: rotate(360deg)
+  }
+`
 const CoverImage = styled('div')({
   width: 100,
   height: 100,
   objectFit: 'cover',
   overflow: 'hidden',
   flexShrink: 0,
-  borderRadius: 8,
+  // borderRadius: 8,
   backgroundColor: 'rgba(0,0,0,0.08)',
   '& > img': {
     width: '100%',
+    borderRadius: '50%',
+    animation: `${spin}  6s linear infinite`
   },
 });
 
@@ -94,10 +105,10 @@ export default function MusicPlayer(props: MusicPlayerProps) {
     const unsub = onValueCustom(
       `rooms/${currentRoom?.roomId}/musicBox`,
       (musicBox: { currentSong: Song; playlist: Song[] }) => {
-        if (musicBox.currentSong) {
+        if (musicBox && musicBox.currentSong) {
           setCurrentSong(musicBox.currentSong);
         }
-        if (musicBox.playlist) {
+        if (musicBox && musicBox.playlist) {
           setPlaylist(musicBox.playlist);
         }else{
           setPlaylist([])

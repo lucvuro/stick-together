@@ -22,7 +22,7 @@ export function UserControl(props: UserControlProps) {
   const [mic, setMic] = useState<boolean>(false);
   const [headset, setHeadSet] = useState<boolean>(true);
   const { mediaStream, muteAllAudio } = useRoom();
-  const {currentUserApp} = useUser()
+  const { currentUserApp } = useUser();
   const setMuteMediaStream = (mute: boolean) => {
     if (mediaStream) {
       mediaStream.getAudioTracks()[0].enabled = mute;
@@ -81,9 +81,11 @@ export function UserControl(props: UserControlProps) {
               </Tooltip>
             )}
             <Tooltip placement="top" arrow title="Settings">
-              <IconButton disabled>
-                <SettingsIcon />
-              </IconButton>
+              <span>
+                <IconButton disabled>
+                  <SettingsIcon />
+                </IconButton>
+              </span>
             </Tooltip>
           </Box>
         </Box>

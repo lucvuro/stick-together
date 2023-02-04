@@ -9,4 +9,14 @@
 }
 .musicBoxItem{
     display: flex;
+    padding: .3rem;
+}
+/* .musicBoxItem:hover{
+    background-color: black;
+    cursor: pointer;
+} */
+@media only screen and (max-width: 800px){
+    .mainMusicBox{
+        flex-direction: column;
+    }
 }

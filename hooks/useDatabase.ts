@@ -80,17 +80,26 @@ const useDatabase = () => {
       chats: {},
       members: {},
     };
+    // roomContext.setCurrentRoom(currentRoom);
+
     try {
       await set(ref(database, 'rooms/' + newRoomKey), currentRoom);
       await update(ref(database, 'users/' + currentUserApp.uid), {
         roomId: newRoomKey,
       });
-      addMemberToRoom(newRoomKey, currentUserApp);
+      await addMemberToRoom(newRoomKey, currentUserApp);
+      await fetch(
+        `${process.env.NEXT_PUBLIC_APILINK}/stream/${newRoomKey}/init`
+      );
       router.push(`/room/${newRoomKey}`);
     } catch (err) {
       console.log(err);
     } finally {
       setLoadingCreate(false);
+      setCurrentUserApp({
+        ...currentUserApp,
+        roomId: newRoomKey || '',
+      });
     }
   };
   const getRoomFromUser = async (roomId: string) => {
@@ -116,7 +125,6 @@ const useDatabase = () => {
       await update(ref(database, 'users/' + currentUserApp.uid), {
         roomId: '',
       });
-      roomContext.setCurrentRoom(null);
       const roomFromDB = await get(
         child(ref(database), 'rooms/' + currentRoom.roomId)
       );
@@ -137,6 +145,7 @@ const useDatabase = () => {
       console.log(err);
     } finally {
       setLoadingLeave(false);
+      roomContext.setCurrentRoom(null);
     }
   };
   const addMemberToRoom = async (

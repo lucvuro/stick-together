@@ -1,8 +1,15 @@
 import useMusicBox from '@/hooks/useMusicBox';
-import { Box, List, ListItem, Pagination, Typography } from '@mui/material';
+import {
+  Box,
+  List,
+  ListItem,
+  Pagination,
+  Stack,
+  Typography,
+} from '@mui/material';
 import React, { useState } from 'react';
 import { MusicItem } from './MusicItem';
-
+import QueueMusicIcon from '@mui/icons-material/QueueMusic';
 export interface PlaylistProps {}
 
 export default function PlayList(props: PlaylistProps) {
@@ -20,7 +27,7 @@ export default function PlayList(props: PlaylistProps) {
     <>
       <Box
         sx={{
-          width: '300px',
+          width: '343px',
           bgcolor: 'rgba(0,0,0,0.6)',
           borderRadius: '.5rem',
           color: '#f6f6f6',
@@ -28,19 +35,25 @@ export default function PlayList(props: PlaylistProps) {
           paddingLeft: '1rem',
         }}
       >
-        <Typography variant="h5">Playlist</Typography>
+        <Stack direction='row' sx={{alignItems: 'center'}} spacing={0.5}>
+          <Typography variant="h5">Playlist</Typography>
+          <QueueMusicIcon />
+        </Stack>
       </Box>
       {playlist.length > 0 && (
         <>
           <List
             sx={{
               width: '300px',
+              padding: '.5rem'
             }}
+            disablePadding
           >
             {playlist.slice(begin, end).map((song) => {
               return (
                 <ListItem
                   key={song.id + `${Math.floor(Math.random() * 9000) + 1000}`}
+                  disablePadding
                 >
                   <MusicItem song={song} />
                 </ListItem>
@@ -58,8 +71,15 @@ export default function PlayList(props: PlaylistProps) {
       )}
       {playlist.length <= 0 && (
         <>
-          <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', mt: '2rem'}}>
-            <Typography variant='body1'>Empty list</Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              mt: '2rem',
+            }}
+          >
+            <Typography variant="body1">Empty list</Typography>
           </Box>
         </>
       )}
