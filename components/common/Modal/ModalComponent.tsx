@@ -13,17 +13,19 @@ export interface IModalComponent {
   footer?: boolean;
   onClose: () => void;
   onApply: () => void;
+  loading?: boolean;
 }
 export default function ModalComponent({
   title = '',
   open,
   children,
   footer = false,
+  loading,
   onClose,
   onApply,
 }: IModalComponent) {
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} disableAutoFocus>
       <Box style={STYLE_MODAL}>
         <Box sx={{ color: 'text.primary' }}>
           <Stack direction="row" className={styles.headerModal}>
@@ -48,9 +50,15 @@ export default function ModalComponent({
                 <LoadingButton onClick={() => onClose()} variant="text">
                   Cancel
                 </LoadingButton>
-                <LoadingButton onClick={() => onApply()} variant="contained">
-                  Apply
-                </LoadingButton>
+                {loading ? (
+                  <LoadingButton loading={loading} onClick={() => onApply()} variant="contained">
+                    Apply
+                  </LoadingButton>
+                ) : (
+                  <LoadingButton onClick={() => onApply()} variant="contained">
+                    Apply
+                  </LoadingButton>
+                )}
               </Stack>
             </Box>
           )}

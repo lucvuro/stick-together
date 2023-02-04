@@ -33,6 +33,7 @@ const useDatabase = () => {
   const [loadingLeave, setLoadingLeave] = useState<boolean>(false);
   const [loadingAdd, setLoadingAdd] = useState<boolean>(false);
   const router = useRouter();
+  //---User
   const createUser = async (userCredential: UserCredential) => {
     try {
       await set(ref(database, 'users/' + userCredential.user.uid), {
@@ -46,18 +47,24 @@ const useDatabase = () => {
       console.log(err);
     }
   };
-  const getUserAndSetUserApp = async (userId: string) => {
+  const getUserAndSetUserApp = async (user: User) => {
+    const dateUpdate = {
+      email: user.email,
+      photoUrl: user.photoURL,
+    };
     try {
+      await update(ref(database, 'users/' + user.uid), dateUpdate);
       const snapshot: DataSnapshot = await get(
-        child(ref(database), 'users/' + userId)
+        child(ref(database), 'users/' + user.uid)
       );
-      const user: UserApp = snapshot.val();
-      setCurrentUserApp(user);
+      const userApp: UserApp = snapshot.val();
+      setCurrentUserApp(userApp);
     } catch (err) {
       console.log(err);
       setCurrentUserApp(null);
     }
   };
+  //---User
   //---Rooms
   const getRoomAndSetRoom = async (roomId: string, callback: any) => {
     try {
@@ -223,6 +230,15 @@ const useDatabase = () => {
       }
     }
   };
+  const updateMemberToRoom = async(roomId: string | null, user: UserApp) => {
+    if (roomId && user){
+      await update(ref(database, 'rooms/' + roomId + '/members/' + user.uid), {
+        email: user.email,
+        photoUrl: user.photoUrl,
+        isOnline: true,
+      });
+    }
+  }
   //---Rooms
 
   //--Custom firebase
@@ -246,6 +262,7 @@ const useDatabase = () => {
     onValueCustom,
     setStatusMember,
     setPeerIdToMember,
+    updateMemberToRoom,
     loadingCreate,
     loadingRoom,
     loadingLeave,

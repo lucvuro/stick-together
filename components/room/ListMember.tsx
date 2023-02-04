@@ -17,7 +17,13 @@ import useUser from '@/hooks/useUser';
 import { MediaConnection } from 'peerjs';
 export interface ListMemberProps {}
 export function ListMember(props: ListMemberProps) {
-  const { listMember, setListMember, currentRoom, setMediaStream, setAudiosFromPeer } = useRoom();
+  const {
+    listMember,
+    setListMember,
+    currentRoom,
+    setMediaStream,
+    setAudiosFromPeer,
+  } = useRoom();
   const { onValueCustom, setPeerIdToMember } = useDatabase();
   const { currentUserApp } = useUser();
   const StyledBadgeOnline = styled(Badge)(({ theme }) => ({
@@ -86,9 +92,9 @@ export function ListMember(props: ListMemberProps) {
             video: false,
             audio: true,
           });
-          mediaStream.getAudioTracks()[0].enabled = false
-          console.log(mediaStream.id)
-          setMediaStream(mediaStream)
+          mediaStream.getAudioTracks()[0].enabled = false;
+          console.log(mediaStream.id);
+          setMediaStream(mediaStream);
           peer = new Peer();
           peer.on('call', (call: MediaConnection) => {
             call.answer(mediaStream);
@@ -96,8 +102,8 @@ export function ListMember(props: ListMemberProps) {
               const audio = new Audio();
               audio.autoplay = true;
               audio.srcObject = remoteStream;
-              audio.id = remoteStream.id
-              setAudiosFromPeer(audio)
+              audio.id = remoteStream.id;
+              setAudiosFromPeer(audio);
             });
           });
           peer.on('error', (err: any) => {
@@ -118,8 +124,8 @@ export function ListMember(props: ListMemberProps) {
                   const audio = new Audio();
                   audio.autoplay = true;
                   audio.srcObject = remoteStream;
-                  audio.id = remoteStream.id
-                  setAudiosFromPeer(audio)
+                  audio.id = remoteStream.id;
+                  setAudiosFromPeer(audio);
                 });
                 call.on('error', (error: any) => {
                   console.log('error', error);
@@ -153,7 +159,14 @@ export function ListMember(props: ListMemberProps) {
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                   variant="dot"
                 >
-                  <Avatar sx={{ width: 36, height: 36 }}>V</Avatar>
+                  {member.photoUrl ? (
+                    <Avatar
+                      src={member.photoUrl}
+                      sx={{ width: 36, height: 36 }}
+                    />
+                  ) : (
+                    <Avatar sx={{ width: 36, height: 36 }}/>
+                  )}
                 </StyledBadgeOnline>
               ) : (
                 <StyledBadgeOffline
@@ -161,10 +174,20 @@ export function ListMember(props: ListMemberProps) {
                   anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                   variant="dot"
                 >
-                  <Avatar sx={{ width: 36, height: 36 }}>V</Avatar>
+                  {member.photoUrl ? (
+                    <Avatar
+                      src={member.photoUrl}
+                      sx={{ width: 36, height: 36 }}
+                    />
+                  ) : (
+                    <Avatar sx={{ width: 36, height: 36 }}/>
+                  )}
                 </StyledBadgeOffline>
               )}
-              <ListItemText primary={member.email} primaryTypographyProps={{noWrap: true}}/>
+              <ListItemText
+                primary={member.email}
+                primaryTypographyProps={{ noWrap: true }}
+              />
             </ListItemButton>
           </ListItem>
         ))}

@@ -36,6 +36,7 @@ export default function RoomDetail(props: RoomDetailProps) {
     setStatusMember,
     getUserAndSetUserApp,
     getRoomAndSetRoom,
+    updateMemberToRoom
   } = useDatabase();
   const handleOk = () => {
     router.push('/');
@@ -49,7 +50,7 @@ export default function RoomDetail(props: RoomDetailProps) {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
         //If user have in app before dont need set again
-        getUserAndSetUserApp(user.uid);
+        getUserAndSetUserApp(user);
         if (router.pathname === '/login') {
           router.push('/');
         }
@@ -79,7 +80,8 @@ export default function RoomDetail(props: RoomDetailProps) {
         addMemberToRoom(currentRoom.roomId, currentUserApp);
       } else {
         //If user is a member in room set status to online
-        setStatusMember(currentRoom.roomId, currentUserApp.uid, true);
+        //And update member again
+        updateMemberToRoom(currentRoom.roomId, currentUserApp)
       }
     }
     window.addEventListener('beforeunload', () => {

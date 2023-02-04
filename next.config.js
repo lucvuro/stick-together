@@ -8,6 +8,12 @@ const nextConfig = {
         hostname: 'i.ytimg.com',
         port: '',
         pathname: '/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
+        port: '',
+        pathname: '/**'
       }
     ]
   }

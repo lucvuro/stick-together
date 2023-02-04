@@ -7,10 +7,14 @@ export interface MessageProps {
 }
 
 export default function MessageComponent(props: MessageProps) {
-  const {message} = props
+  const { message } = props;
   return (
     <Box className={styles.message}>
-      <Avatar alt="message-avatar">V</Avatar>
+      {message?.sender.photoUrl ? (
+        <Avatar src={message?.sender.photoUrl} alt="message-avatar">V</Avatar>
+      ) : (
+        <Avatar alt="message-avatar"/>
+      )}
       <Box className={styles.messageContent}>
         <p>{message?.sender.email}</p>
         <p className={styles.messageText}>{message?.content}</p>

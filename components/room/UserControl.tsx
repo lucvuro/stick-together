@@ -47,7 +47,11 @@ export function UserControl(props: UserControlProps) {
         <Box className={styles.userControl}>
           <Box className={styles.userControlInfo}>
             <Button sx={{ display: 'flex', gap: '.5rem' }}>
-              <Avatar sx={{ width: 36, height: 36 }}>V</Avatar>
+              {currentUserApp?.photoUrl ? (
+                <Avatar src={currentUserApp.photoUrl} sx={{ width: 36, height: 36 }}/>
+              ) : (
+                <Avatar sx={{ width: 36, height: 36 }}/>
+              )}
               <Typography variant="body2" noWrap sx={{ textTransform: 'none' }}>
                 {currentUserApp?.email}
               </Typography>

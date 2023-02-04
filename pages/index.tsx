@@ -3,6 +3,7 @@ import Image from 'next/image';
 import styles from '@/styles/Home.module.css';
 import { useEffect, useState } from 'react';
 import {
+  Avatar,
   Box,
   Button,
   CircularProgress,
@@ -58,7 +59,7 @@ export default function Home() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
-        getUserAndSetUserApp(user.uid);
+        getUserAndSetUserApp(user);
         if (router.pathname === '/login') {
           router.push('/');
         }
@@ -87,15 +88,27 @@ export default function Home() {
             {currentUserApp ? (
               <>
                 <Box className={styles.homeProfileAvatar}>
-                  <Image
-                    className={styles.homeProfileAvatarImage}
-                    src={defaultAvatar}
-                    alt="default-avatar"
-                    width={150}
-                    height={150}
-                  />
-                  <div onClick={() => {setOpenChangeAvatarModal(true)}} className={styles.homeProfileAvatarButton}>
-                    <Typography variant='button'>Change Avatar</Typography>
+                  {currentUserApp.photoUrl ? (
+                    <Avatar
+                      sx={{ width: '150px', height: '150px' }}
+                      src={currentUserApp.photoUrl}
+                      alt='avatar'
+                      variant='square'
+                    />
+                  ) : (
+                    <Avatar
+                      sx={{ width: '150px', height: '150px' }}
+                      alt='avatar'
+                      variant='square'
+                    />
+                  )}
+                  <div
+                    onClick={() => {
+                      setOpenChangeAvatarModal(true);
+                    }}
+                    className={styles.homeProfileAvatarButton}
+                  >
+                    <Typography variant="button">Change Avatar</Typography>
                   </div>
                 </Box>
                 {/* <Box>

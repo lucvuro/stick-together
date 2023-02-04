@@ -36,7 +36,7 @@ export function InputMessage(props: InputMessageProps) {
           sender: {
             uid: currentUserApp.uid,
             email: currentUserApp.email,
-            photoUrl: "",
+            photoUrl: currentUserApp.photoUrl,
             isOnline: true
           },
           mid: '',
