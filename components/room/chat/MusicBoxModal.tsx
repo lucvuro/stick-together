@@ -14,6 +14,7 @@ import useMusicBox from '@/hooks/useMusicBox';
 import { STYLE_MODAL } from '@/constants/modal';
 import useRoom from '@/hooks/useRoom';
 import LoadingComponent from '@/components/common/LoadingComponent';
+import styles from '@/styles/MusicBox.module.css'
 
 export interface MusicBoxModalProps {}
 
@@ -53,7 +54,23 @@ export function MusicBoxModal(props: MusicBoxModalProps) {
   }, [audio]);
   return (
     <>
-      {!openMusicBox && (
+      {!openMusicBox && connected &&(
+        <Box sx={{ position: 'absolute', bottom: '16px', right: '16px' }}>
+          <Fab
+            color="primary"
+            aria-label="music-box"
+            onClick={() => {
+              connectToMusicBox();
+            }}
+            className={styles.musicIcon}
+          >
+            <MusicNoteIcon />
+          </Fab>
+          <div className={styles.noteMusic}>♪</div>
+          <div className={styles.noteMusic2}>♫</div>
+        </Box>
+      )}
+      {!openMusicBox && !connected &&(
         <Box sx={{ position: 'absolute', bottom: '16px', right: '16px' }}>
           <Fab
             color="primary"

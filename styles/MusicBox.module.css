@@ -1,22 +1,66 @@
-.mainMusicBox{
-    display: flex;
-    gap: 1.5rem;
+.mainMusicBox {
+  display: flex;
+  gap: 1.5rem;
+  /* width: 774px; */
 }
-.musicBoxLeftContent{
-    display: flex;
-    flex-direction: column;
-    gap: .5rem;
+.musicBoxLeftContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
-.musicBoxItem{
-    display: flex;
-    padding: .3rem;
+.musicBoxItem {
+  display: flex;
+  padding: 0.3rem;
 }
 /* .musicBoxItem:hover{
     background-color: black;
     cursor: pointer;
 } */
-@media only screen and (max-width: 800px){
-    .mainMusicBox{
-        flex-direction: column;
-    }
+.musicIcon {
+  animation: bounce 1.2s linear infinite;
+}
+.noteMusic, .noteMusic2 {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  font-size: 1.2rem;
+  animation: notes 2s linear infinite;
+  animation-delay: .5s;
+}
+.noteMusic2{
+    animation-delay: 1s;
+}
+@keyframes bounce {
+  0%,
+  25%,
+  50%,
+  75%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  60% {
+    transform: translateY(-12px);
+  }
+}
+@keyframes notes {
+  0% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5) translate(50%, -50%);
+  }
+  80% , 100% {
+    transform: scale(1.5) translate(100%, -100%);
+    opacity: 0;
+  }
+}
+@media only screen and (max-width: 800px) {
+  .mainMusicBox {
+    flex-direction: column;
+  }
 }

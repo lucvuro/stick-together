@@ -1,15 +1,18 @@
 import useMusicBox from '@/hooks/useMusicBox';
 import {
   Box,
+  Collapse,
   List,
   ListItem,
   Pagination,
   Stack,
   Typography,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { MusicItem } from './MusicItem';
 import QueueMusicIcon from '@mui/icons-material/QueueMusic';
+import { TransitionGroup } from 'react-transition-group';
+import EmptyComponent from '../common/EmptyComponent';
 export interface PlaylistProps {}
 
 export default function PlayList(props: PlaylistProps) {
@@ -19,7 +22,7 @@ export default function PlayList(props: PlaylistProps) {
   const count = Math.ceil(playlist.length / PER_PAGE);
   const begin = (page - 1) * PER_PAGE;
   const end = begin + PER_PAGE;
-
+  const refList = useRef(null);
   const handleChangePage = (e: React.ChangeEvent<unknown>, p: number) => {
     setPage(p);
   };
@@ -35,30 +38,35 @@ export default function PlayList(props: PlaylistProps) {
           paddingLeft: '1rem',
         }}
       >
-        <Stack direction='row' sx={{alignItems: 'center'}} spacing={0.5}>
+        <Stack direction="row" sx={{ alignItems: 'center' }} spacing={0.5}>
           <Typography variant="h5">Playlist</Typography>
           <QueueMusicIcon />
         </Stack>
       </Box>
       {playlist.length > 0 && (
-        <>
+        <Box>
           <List
             sx={{
               width: '300px',
-              padding: '.5rem'
+              padding: '.5rem',
             }}
             disablePadding
           >
-            {playlist.slice(begin, end).map((song) => {
-              return (
-                <ListItem
-                  key={song.id + `${Math.floor(Math.random() * 9000) + 1000}`}
-                  disablePadding
-                >
-                  <MusicItem song={song} />
-                </ListItem>
-              );
-            })}
+            <TransitionGroup>
+              {playlist.slice(begin, end).map((song) => {
+                return (
+                  <Collapse
+                    timeout="auto"
+                    // container={refList.current}
+                    key={song.id + `${Math.floor(Math.random() * 9000) + 1000}`}
+                  >
+                    <ListItem disablePadding>
+                      <MusicItem song={song} />
+                    </ListItem>
+                  </Collapse>
+                );
+              })}
+            </TransitionGroup>
           </List>
           <Pagination
             count={count}
@@ -67,7 +75,7 @@ export default function PlayList(props: PlaylistProps) {
               handleChangePage(e, p);
             }}
           />
-        </>
+        </Box>
       )}
       {playlist.length <= 0 && (
         <>
@@ -79,7 +87,7 @@ export default function PlayList(props: PlaylistProps) {
               mt: '2rem',
             }}
           >
-            <Typography variant="body1">Empty list</Typography>
+            <EmptyComponent/>
           </Box>
         </>
       )}
