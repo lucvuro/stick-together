@@ -13,6 +13,7 @@ import { MusicBox } from '@/components/musicbox/MusicBox';
 import useMusicBox from '@/hooks/useMusicBox';
 import { STYLE_MODAL } from '@/constants/modal';
 import useRoom from '@/hooks/useRoom';
+import LoadingComponent from '@/components/common/LoadingComponent';
 
 export interface MusicBoxModalProps {}
 
@@ -86,8 +87,8 @@ export function MusicBoxModal(props: MusicBoxModalProps) {
                 height: { md: '300px' },
               }}
             >
+              <LoadingComponent/>
               <Typography>Connecting to Music Box...</Typography>
-              <CircularProgress sx={{mt: '1rem'}}/>
             </Box>
           </Box>
         )}

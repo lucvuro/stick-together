@@ -18,6 +18,7 @@ import useDatabase from '@/hooks/useDatabase';
 import { LoadingButton } from '@mui/lab';
 import useUser from '@/hooks/useUser';
 import useRoom from '@/hooks/useRoom';
+import LoadingComponent from '@/components/common/LoadingComponent';
 
 export default function Home() {
   const { getUserAndSetUserApp } = useDatabase();
@@ -100,8 +101,8 @@ export default function Home() {
             ) : (
               <>
                 <Box className={styles.homeProfileLoading}>
+                  <LoadingComponent/>
                   <p>Loading your profile...</p>
-                  <CircularProgress />
                 </Box>
               </>
             )}
@@ -155,8 +156,8 @@ export default function Home() {
             ) : (
               <>
                 <Box className={styles.homeProfileLoading}>
+                  <LoadingComponent/>
                   <p>Loading your room info...</p>
-                  <CircularProgress />
                 </Box>
               </>
             )}

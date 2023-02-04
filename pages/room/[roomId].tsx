@@ -20,6 +20,7 @@ import styles from '@/styles/Room.module.css';
 import useDatabase from '@/hooks/useDatabase';
 import useRoom from '@/hooks/useRoom';
 import useUser from '@/hooks/useUser';
+import LoadingComponent from '@/components/common/LoadingComponent';
 interface RoomDetailProps {
   currentRoom: CurrentRoom;
 }
@@ -109,8 +110,8 @@ export default function RoomDetail(props: RoomDetailProps) {
         </main>
       ) : (
         <Box sx={{ color: 'text.primary' }} className={styles.roomLoading}>
+          <LoadingComponent/>
           <p>Loading room infos....</p>
-          <CircularProgress />
         </Box>
       )}
       <Dialog
