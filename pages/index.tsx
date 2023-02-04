@@ -8,6 +8,7 @@ import {
   CircularProgress,
   IconButton,
   Paper,
+  Typography,
 } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
 import useAuth from '@/hooks/useAuth';
@@ -19,12 +20,15 @@ import { LoadingButton } from '@mui/lab';
 import useUser from '@/hooks/useUser';
 import useRoom from '@/hooks/useRoom';
 import LoadingComponent from '@/components/common/LoadingComponent';
+import ChangeAvatarModal from '@/components/common/ChangeAvatar';
 
 export default function Home() {
   const { getUserAndSetUserApp } = useDatabase();
   const { auth, router } = useAuth();
   const { currentUserApp } = useUser();
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
+  const [openChangeAvatarModal, setOpenChangeAvatarModal] =
+    useState<boolean>(false);
   const {
     createRoom,
     loadingCreate,
@@ -82,18 +86,23 @@ export default function Home() {
           <Box className={styles.homeProfile}>
             {currentUserApp ? (
               <>
-                <Image
-                  className={styles.homeProfileAvatar}
-                  src={defaultAvatar}
-                  alt="default-avatar"
-                  width={150}
-                  height={150}
-                />
-                <Box>
+                <Box className={styles.homeProfileAvatar}>
+                  <Image
+                    className={styles.homeProfileAvatarImage}
+                    src={defaultAvatar}
+                    alt="default-avatar"
+                    width={150}
+                    height={150}
+                  />
+                  <div onClick={() => {setOpenChangeAvatarModal(true)}} className={styles.homeProfileAvatarButton}>
+                    <Typography variant='button'>Change Avatar</Typography>
+                  </div>
+                </Box>
+                {/* <Box>
                   <IconButton>
                     <SettingsIcon />
                   </IconButton>
-                </Box>
+                </Box> */}
                 <div className={styles.profileInfo}>
                   <p>{currentUserApp.email}</p>
                 </div>
@@ -101,7 +110,7 @@ export default function Home() {
             ) : (
               <>
                 <Box className={styles.homeProfileLoading}>
-                  <LoadingComponent/>
+                  <LoadingComponent />
                   <p>Loading your profile...</p>
                 </Box>
               </>
@@ -156,7 +165,7 @@ export default function Home() {
             ) : (
               <>
                 <Box className={styles.homeProfileLoading}>
-                  <LoadingComponent/>
+                  <LoadingComponent />
                   <p>Loading your room info...</p>
                 </Box>
               </>
@@ -164,6 +173,10 @@ export default function Home() {
           </Box>
         </Paper>
         <ModalJoin open={openCreateModal} setOpen={setOpenCreateModal} />
+        <ChangeAvatarModal
+          open={openChangeAvatarModal}
+          setOpen={setOpenChangeAvatarModal}
+        />
       </main>
     </>
   );
