@@ -32,7 +32,7 @@ export default function ChangeAvatarModal(props: IChangeAvatarModal) {
     props.setOpen(false);
   };
   const onApply = () => {
-    if (currentUserApp && typeImage) {
+    if (currentUserApp && typeImage && source) {
       uploadAvatar(currentUserApp.uid, source, typeImage, onClose);
     //   onClose();
     }

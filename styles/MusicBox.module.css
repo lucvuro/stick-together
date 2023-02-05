@@ -2,7 +2,7 @@
   display: flex;
   gap: 1.5rem;
   /* width: 774px; */
-  padding: 2rem;
+  padding: 0 1rem 1rem;
 }
 .musicBoxLeftContent {
   display: flex;

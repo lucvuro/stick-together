@@ -30,7 +30,7 @@ export default function PlayList(props: PlaylistProps) {
     <>
       <Box
         sx={{
-          width: '343px',
+          width: {xs: '100%', md: '343px'},
           bgcolor: 'rgba(0,0,0,0.6)',
           borderRadius: '.5rem',
           color: '#f6f6f6',

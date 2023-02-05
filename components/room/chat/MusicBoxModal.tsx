@@ -14,7 +14,8 @@ import useMusicBox from '@/hooks/useMusicBox';
 import { STYLE_MODAL } from '@/constants/modal';
 import useRoom from '@/hooks/useRoom';
 import LoadingComponent from '@/components/common/LoadingComponent';
-import styles from '@/styles/MusicBox.module.css'
+import styles from '@/styles/MusicBox.module.css';
+import ModalComponent from '@/components/common/Modal/ModalComponent';
 
 export interface MusicBoxModalProps {}
 
@@ -54,7 +55,7 @@ export function MusicBoxModal(props: MusicBoxModalProps) {
   }, [audio]);
   return (
     <>
-      {!openMusicBox && connected &&(
+      {!openMusicBox && connected && (
         <Box sx={{ position: 'absolute', bottom: '16px', right: '16px' }}>
           <Fab
             color="primary"
@@ -70,7 +71,7 @@ export function MusicBoxModal(props: MusicBoxModalProps) {
           <div className={styles.noteMusic2}>♫</div>
         </Box>
       )}
-      {!openMusicBox && !connected &&(
+      {!openMusicBox && !connected && (
         <Box sx={{ position: 'absolute', bottom: '16px', right: '16px' }}>
           <Fab
             color="primary"
@@ -83,33 +84,30 @@ export function MusicBoxModal(props: MusicBoxModalProps) {
           </Fab>
         </Box>
       )}
-      <Modal
-        keepMounted
+      <ModalComponent
+        title="Music Box"
         onClose={() => setOpenMusicBox(false)}
         open={openMusicBox}
+        footer={false}
       >
         {connected ? (
-          <Box sx={STYLE_MODAL}>
-            <MusicBox setVolumeAudio={setVolumeAudio} volume={volume} />
-          </Box>
+          <MusicBox setVolumeAudio={setVolumeAudio} volume={volume} />
         ) : (
-          <Box sx={STYLE_MODAL}>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: { md: '730px', xs: '250px' },
-                height: { md: '300px' },
-              }}
-            >
-              <LoadingComponent/>
-              <Typography>Connecting to Music Box...</Typography>
-            </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: { md: '730px', xs: '100%' },
+              height: { md: '300px' },
+            }}
+          >
+            <LoadingComponent />
+            <Typography>Connecting to Music Box...</Typography>
           </Box>
         )}
-      </Modal>
+      </ModalComponent>
     </>
   );
 }

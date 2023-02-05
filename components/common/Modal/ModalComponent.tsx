@@ -12,7 +12,7 @@ export interface IModalComponent {
   children: ReactNode;
   footer?: boolean;
   onClose: () => void;
-  onApply: () => void;
+  onApply?: () => void;
   loading?: boolean;
 }
 export default function ModalComponent({
@@ -27,7 +27,7 @@ export default function ModalComponent({
   return (
     <Modal open={open} onClose={onClose} disableAutoFocus>
       <Box style={STYLE_MODAL}>
-        <Box sx={{ color: 'text.primary' }}>
+        <Box className={styles.mainModal} sx={{ color: 'text.primary' }}>
           <Stack direction="row" className={styles.headerModal}>
             <Typography variant="h5">{title}</Typography>
             <IconButton
@@ -39,7 +39,7 @@ export default function ModalComponent({
             </IconButton>
           </Stack>
           <Box className={styles.contentModal}>{children}</Box>
-          {footer && (
+          {footer && onApply && (
             <Box className={styles.footerModal}>
               <Stack className="buttonLeftModal"></Stack>
               <Stack
