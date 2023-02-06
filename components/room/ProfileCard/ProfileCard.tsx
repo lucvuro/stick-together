@@ -1,7 +1,7 @@
 import { Avatar, Badge, Box, Divider, Paper, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import React from 'react';
-import styles from './ProfileCard.module.css';
+import styles from '@/styles/ProfileCard.module.css'
 import { styled } from '@mui/material/styles';
 import { Member } from '@/Contexts/roomContext';
 import LoadingComponent from '@/components/common/LoadingComponent';

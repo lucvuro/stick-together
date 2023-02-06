@@ -114,7 +114,6 @@ export function ListMember(props: ListMemberProps) {
             audio: true,
           });
           mediaStream.getAudioTracks()[0].enabled = false;
-          console.log(mediaStream.id);
           setMediaStream(mediaStream);
           peer = new Peer();
           peer.on('call', (call: MediaConnection) => {
