@@ -17,6 +17,7 @@ import useDatabase from '@/hooks/useDatabase';
 import useUser from '@/hooks/useUser';
 import { MediaConnection } from 'peerjs';
 import ProfileCard from './ProfileCard';
+import { useRouter } from 'next/router';
 const StyledBadgeOnline = styled(Badge)(({ theme }) => ({
   '& .MuiBadge-badge': {
     backgroundColor: '#44b700',
@@ -71,11 +72,22 @@ export function ListMember(props: ListMemberProps) {
     setMediaStream,
     setAudiosFromPeer,
   } = useRoom();
-  const { onValueCustom, setPeerIdToMember, getMemberFromRoom } = useDatabase();
+  const {
+    onValueCustom,
+    setPeerIdToMember,
+    getMemberFromRoom,
+    setStatusMember,
+    loadingLeave,
+  } = useDatabase();
   const { currentUserApp } = useUser();
-  const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLDivElement | null>(null);
+  const [anchorEl, setAnchorEl] = useState<
+    (EventTarget & HTMLDivElement) | null
+  >(null);
   const open = Boolean(anchorEl);
-  const handleClick = async (event: React.MouseEvent<HTMLDivElement, MouseEvent>, memberId: string | undefined) => {
+  const handleClick = async (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    memberId: string | undefined
+  ) => {
     if (memberId && event.currentTarget) {
       setAnchorEl(event.currentTarget);
       await setMemberToProfileCard(memberId);
@@ -92,6 +104,7 @@ export function ListMember(props: ListMemberProps) {
       setCurrentMember(member);
     }
   };
+  const router = useRouter();
   useEffect(() => {
     const unsub = onValueCustom(
       `rooms/${currentRoom?.roomId}/members`,
@@ -101,7 +114,10 @@ export function ListMember(props: ListMemberProps) {
         }
       }
     );
-    return () => unsub();
+    return () => {
+      unsub();
+      setListMember([])
+    }
   }, []);
   useEffect(() => {
     let peer: any;
@@ -129,9 +145,15 @@ export function ListMember(props: ListMemberProps) {
           peer.on('error', (err: any) => {
             console.log('error', err);
           });
+          peer.on('close', () => {
+            if (currentRoom && currentUserApp) {
+              setStatusMember(currentRoom.roomId, currentUserApp.uid, false);
+            }
+          });
           peer.on('open', (id: string) => {
             if (currentRoom?.roomId) {
               setPeerIdToMember(currentRoom?.roomId, currentUserApp.uid, id);
+              setStatusMember(currentRoom.roomId, currentUserApp.uid, true);
             }
             listMember.forEach((member: Member) => {
               if (

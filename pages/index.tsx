@@ -69,11 +69,6 @@ export default function Home() {
     });
     return () => unsub();
   }, []);
-  useEffect(() => {
-    if (currentUserApp) {
-      getRoomFromUser(currentUserApp.roomId);
-    }
-  }, [currentUserApp]);
   return (
     <>
       <Head>
@@ -92,14 +87,14 @@ export default function Home() {
                     <Avatar
                       sx={{ width: '150px', height: '150px' }}
                       src={currentUserApp.photoUrl}
-                      alt='avatar'
-                      variant='square'
+                      alt="avatar"
+                      variant="square"
                     />
                   ) : (
                     <Avatar
                       sx={{ width: '150px', height: '150px' }}
-                      alt='avatar'
-                      variant='square'
+                      alt="avatar"
+                      variant="square"
                     />
                   )}
                   <div

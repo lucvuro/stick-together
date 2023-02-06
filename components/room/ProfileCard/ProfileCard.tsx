@@ -89,7 +89,7 @@ export default function ProfileCard(props: IProfileCard) {
                     className={styles.profileCardImage}
                   />
                 ) : (
-                  <Avatar className={styles.profileCardImage} />
+                  <Avatar sx={{width: '90px', height:'90px'}} className={styles.profileCardImage} />
                 )}
               </StyledBadgeOnline>
             ) : (
@@ -100,11 +100,12 @@ export default function ProfileCard(props: IProfileCard) {
               >
                 {props.member.photoUrl ? (
                   <Avatar
+                  sx={{width: '90px', height:'90px'}}
                     src={props.member.photoUrl}
                     className={styles.profileCardImage}
                   />
                 ) : (
-                  <Avatar className={styles.profileCardImage} />
+                  <Avatar sx={{width: '90px', height:'90px'}} className={styles.profileCardImage} />
                 )}
               </StyledBadgeOffline>
             )}

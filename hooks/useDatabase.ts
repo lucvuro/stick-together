@@ -18,6 +18,7 @@ import {
   onChildAdded,
   DataSnapshot,
   onValue,
+  onChildRemoved,
 } from 'firebase/database';
 import { Router, useRouter } from 'next/router';
 import { useContext, useState } from 'react';
@@ -29,10 +30,10 @@ const useDatabase = () => {
   const { currentUserApp, setCurrentUserApp } = useUser();
   const { setRoom } = useRoom();
   const [loadingCreate, setLoadingCreate] = useState<boolean>(false);
-  const [loadingRoom, setLoadingRoom] = useState<boolean>(true);
+  const [loadingRoom, setLoadingRoom] = useState<boolean>(false);
   const [loadingLeave, setLoadingLeave] = useState<boolean>(false);
   const [loadingAdd, setLoadingAdd] = useState<boolean>(false);
-  const [loadingUpdate, setLoadingUpdate] = useState<boolean>(false)
+  const [loadingUpdate, setLoadingUpdate] = useState<boolean>(false);
   const router = useRouter();
   //---User
   const createUser = async (userCredential: UserCredential) => {
@@ -49,6 +50,7 @@ const useDatabase = () => {
     }
   };
   const getUserAndSetUserApp = async (user: User) => {
+    //And get and room user
     const dateUpdate = {
       email: user.email,
       photoUrl: user.photoURL,
@@ -60,6 +62,9 @@ const useDatabase = () => {
       );
       const userApp: UserApp = snapshot.val();
       setCurrentUserApp(userApp);
+      if (userApp.roomId){
+        getRoomFromUser(userApp.roomId)
+      }
     } catch (err) {
       console.log(err);
       setCurrentUserApp(null);
@@ -117,6 +122,7 @@ const useDatabase = () => {
           child(ref(database), 'rooms/' + roomId) //get room from DB with roomId(user)
         );
         roomContext.setCurrentRoom(roomFromDB.val());
+        console.log(roomFromDB.val())
       }
     } catch (err) {
       console.log(err);
@@ -129,6 +135,7 @@ const useDatabase = () => {
     currentRoom: CurrentRoom
   ) => {
     setLoadingLeave(true);
+    roomContext.setCurrentRoom(null);
     try {
       await update(ref(database, 'users/' + currentUserApp.uid), {
         roomId: '',
@@ -153,7 +160,6 @@ const useDatabase = () => {
       console.log(err);
     } finally {
       setLoadingLeave(false);
-      roomContext.setCurrentRoom(null);
     }
   };
   const addMemberToRoom = async (
@@ -164,9 +170,9 @@ const useDatabase = () => {
       const member: Member = {
         uid: currentUserApp.uid,
         email: currentUserApp.email,
-        photoUrl: '',
+        photoUrl: currentUserApp.photoUrl,
         isOnline: currentUserApp.isOnline,
-        joinDate: new Date().toUTCString()
+        joinDate: new Date().toUTCString(),
       };
       try {
         await update(ref(database, 'users/' + currentUserApp.uid), {
@@ -186,11 +192,17 @@ const useDatabase = () => {
     userId: string | null,
     online: boolean
   ) => {
-    if (roomId && userId) {
+    if (roomId && userId && !loadingLeave) {
       try {
-        await update(ref(database, 'rooms/' + roomId + '/members/' + userId), {
-          isOnline: online,
-        });
+        const roomFromDB = await get(child(ref(database), 'rooms/' + roomId));
+        if (roomFromDB.exists()) {
+          await update(
+            ref(database, 'rooms/' + roomId + '/members/' + userId),
+            {
+              isOnline: online,
+            }
+          );
+        }
       } catch (err) {
         console.log(err);
       }
@@ -237,7 +249,6 @@ const useDatabase = () => {
       await update(ref(database, 'rooms/' + roomId + '/members/' + user.uid), {
         email: user.email,
         photoUrl: user.photoUrl,
-        isOnline: true,
       });
     }
   };
@@ -247,7 +258,7 @@ const useDatabase = () => {
     info: { nickname: string; about: string }
   ) => {
     if (roomId && userId && info) {
-      setLoadingUpdate(true)
+      setLoadingUpdate(true);
       try {
         await update(
           ref(database, 'rooms/' + roomId + '/members/' + userId),
@@ -256,7 +267,7 @@ const useDatabase = () => {
       } catch (err) {
         console.log(err);
       } finally {
-        setLoadingUpdate(false)
+        setLoadingUpdate(false);
       }
     }
   };
@@ -275,6 +286,11 @@ const useDatabase = () => {
       callback(snapshot.val());
     });
   };
+  const onChildRemovedCustom = (path: string, callback: any) => {
+    return onChildRemoved(ref(database, path), (data) => {
+      callback(data)
+    })
+  }
   //--Custom firebase
   return {
     database,
@@ -288,6 +304,7 @@ const useDatabase = () => {
     addChatToRoom,
     addMemberToRoom,
     onValueCustom,
+    onChildRemovedCustom,
     setStatusMember,
     setPeerIdToMember,
     updateMemberToRoom,
@@ -297,7 +314,7 @@ const useDatabase = () => {
     loadingRoom,
     loadingLeave,
     loadingAdd,
-    loadingUpdate
+    loadingUpdate,
   };
 };
 export default useDatabase;

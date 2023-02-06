@@ -16,9 +16,12 @@ import ChatComponent from './ChatComponent';
 import useUser from '@/hooks/useUser';
 import useRoom from '@/hooks/useRoom';
 import { UserControl } from './UserControl';
-import { Fab } from '@mui/material';
+import { Fab, Stack } from '@mui/material';
 import useMusicBox from '@/hooks/useMusicBox';
 import { MusicBoxModal } from './chat/MusicBoxModal';
+import { LoadingButton } from '@mui/lab';
+import useDatabase from '@/hooks/useDatabase';
+import { useRouter } from 'next/router';
 const drawerWidth = 240;
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
@@ -84,7 +87,14 @@ export default function MainComponent(props: MainComponetProps) {
   };
   const { currentUserApp } = useUser();
   const { currentRoom } = useRoom();
-  const { openMusicBox, setOpenMusicBox } = useMusicBox();
+  const { leaveRoomFromUser, loadingLeave } = useDatabase();
+  const router = useRouter();
+  const onClickLeaveRoom = async () => {
+    if (currentRoom && currentUserApp) {
+      await leaveRoomFromUser(currentUserApp, currentRoom);
+      router.push('/');
+    }
+  };
   return (
     <>
       {currentUserApp && currentRoom && (
@@ -101,9 +111,29 @@ export default function MainComponent(props: MainComponetProps) {
               >
                 <MenuIcon />
               </IconButton>
-              <Typography variant="h6" noWrap component="div">
-                Room ID: {currentRoom.roomId}
-              </Typography>
+              <Stack
+                sx={{ width: '100%' }}
+                justifyContent="space-between"
+                spacing={2}
+                direction="row"
+              >
+                <Typography
+                  sx={{ width: { xs: '150px', md: '300px' } }}
+                  variant="h6"
+                  noWrap
+                  component="div"
+                >
+                  Room ID: {currentRoom.roomId}
+                </Typography>
+                <LoadingButton
+                  loading={loadingLeave}
+                  onClick={onClickLeaveRoom}
+                  color="error"
+                  variant="contained"
+                >
+                  Leave Room
+                </LoadingButton>
+              </Stack>
             </Toolbar>
           </AppBar>
           <Drawer
