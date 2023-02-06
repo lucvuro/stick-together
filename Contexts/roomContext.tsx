@@ -33,11 +33,15 @@ export interface Member {
   photoUrl: string | undefined | null;
   isOnline: boolean;
   peerId?: string;
+  nickname?: string;
+  about?: string;
+  joinDate?: string;
 }
 export interface Message {
   content: string;
   sender: Member;
   mid: string;
+  createdAt: string;
 }
 const RoomContext = createContext<RoomContext>({
   currentRoom: null,

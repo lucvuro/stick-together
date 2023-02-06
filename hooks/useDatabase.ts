@@ -32,6 +32,7 @@ const useDatabase = () => {
   const [loadingRoom, setLoadingRoom] = useState<boolean>(true);
   const [loadingLeave, setLoadingLeave] = useState<boolean>(false);
   const [loadingAdd, setLoadingAdd] = useState<boolean>(false);
+  const [loadingUpdate, setLoadingUpdate] = useState<boolean>(false)
   const router = useRouter();
   //---User
   const createUser = async (userCredential: UserCredential) => {
@@ -165,6 +166,7 @@ const useDatabase = () => {
         email: currentUserApp.email,
         photoUrl: '',
         isOnline: currentUserApp.isOnline,
+        joinDate: new Date().toUTCString()
       };
       try {
         await update(ref(database, 'users/' + currentUserApp.uid), {
@@ -230,15 +232,41 @@ const useDatabase = () => {
       }
     }
   };
-  const updateMemberToRoom = async(roomId: string | null, user: UserApp) => {
-    if (roomId && user){
+  const updateMemberToRoom = async (roomId: string | null, user: UserApp) => {
+    if (roomId && user) {
       await update(ref(database, 'rooms/' + roomId + '/members/' + user.uid), {
         email: user.email,
         photoUrl: user.photoUrl,
         isOnline: true,
       });
     }
-  }
+  };
+  const updateNicknameMemberFromRoom = async (
+    roomId: string | null,
+    userId: string,
+    info: { nickname: string; about: string }
+  ) => {
+    if (roomId && userId && info) {
+      setLoadingUpdate(true)
+      try {
+        await update(
+          ref(database, 'rooms/' + roomId + '/members/' + userId),
+          info
+        );
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoadingUpdate(false)
+      }
+    }
+  };
+  const getMemberFromRoom = async (roomId: string | null, userId: string) => {
+    const snapshot: DataSnapshot = await get(
+      child(ref(database), 'rooms/' + roomId + '/members/' + userId)
+    );
+    const member = snapshot.val();
+    return member;
+  };
   //---Rooms
 
   //--Custom firebase
@@ -263,10 +291,13 @@ const useDatabase = () => {
     setStatusMember,
     setPeerIdToMember,
     updateMemberToRoom,
+    updateNicknameMemberFromRoom,
+    getMemberFromRoom,
     loadingCreate,
     loadingRoom,
     loadingLeave,
     loadingAdd,
+    loadingUpdate
   };
 };
 export default useDatabase;

@@ -7,14 +7,61 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Popover,
 } from '@mui/material';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Member } from '@/Contexts/roomContext';
 import { styled } from '@mui/material/styles';
 import useRoom from '@/hooks/useRoom';
 import useDatabase from '@/hooks/useDatabase';
 import useUser from '@/hooks/useUser';
 import { MediaConnection } from 'peerjs';
+import ProfileCard from './ProfileCard';
+const StyledBadgeOnline = styled(Badge)(({ theme }) => ({
+  '& .MuiBadge-badge': {
+    backgroundColor: '#44b700',
+    color: '#44b700',
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    '&::after': {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      borderRadius: '50%',
+      animation: 'ripple 1.2s infinite ease-in-out',
+      border: '1px solid currentColor',
+      content: '""',
+    },
+  },
+  '@keyframes ripple': {
+    '0%': {
+      transform: 'scale(.8)',
+      opacity: 1,
+    },
+    '100%': {
+      transform: 'scale(2.4)',
+      opacity: 0,
+    },
+  },
+}));
+const StyledBadgeOffline = styled(Badge)(({ theme }) => ({
+  '& .MuiBadge-badge': {
+    backgroundColor: '#808080',
+    color: '#808080',
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    '&::after': {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      borderRadius: '50%',
+      border: '1px solid currentColor',
+      content: '""',
+    },
+  },
+}));
 export interface ListMemberProps {}
 export function ListMember(props: ListMemberProps) {
   const {
@@ -24,53 +71,27 @@ export function ListMember(props: ListMemberProps) {
     setMediaStream,
     setAudiosFromPeer,
   } = useRoom();
-  const { onValueCustom, setPeerIdToMember } = useDatabase();
+  const { onValueCustom, setPeerIdToMember, getMemberFromRoom } = useDatabase();
   const { currentUserApp } = useUser();
-  const StyledBadgeOnline = styled(Badge)(({ theme }) => ({
-    '& .MuiBadge-badge': {
-      backgroundColor: '#44b700',
-      color: '#44b700',
-      boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
-      '&::after': {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        borderRadius: '50%',
-        animation: 'ripple 1.2s infinite ease-in-out',
-        border: '1px solid currentColor',
-        content: '""',
-      },
-    },
-    '@keyframes ripple': {
-      '0%': {
-        transform: 'scale(.8)',
-        opacity: 1,
-      },
-      '100%': {
-        transform: 'scale(2.4)',
-        opacity: 0,
-      },
-    },
-  }));
-  const StyledBadgeOffline = styled(Badge)(({ theme }) => ({
-    '& .MuiBadge-badge': {
-      backgroundColor: '#808080',
-      color: '#808080',
-      boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
-      '&::after': {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        borderRadius: '50%',
-        border: '1px solid currentColor',
-        content: '""',
-      },
-    },
-  }));
+  const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLDivElement | null>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = async (event: React.MouseEvent<HTMLDivElement, MouseEvent>, memberId: string | undefined) => {
+    if (memberId && event.currentTarget) {
+      setAnchorEl(event.currentTarget);
+      await setMemberToProfileCard(memberId);
+    }
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const [currentMember, setCurrentMember] = useState<Member | null>(null);
+  const setMemberToProfileCard = async (memberId: string) => {
+    setCurrentMember(null);
+    if (currentRoom) {
+      const member = await getMemberFromRoom(currentRoom?.roomId, memberId);
+      setCurrentMember(member);
+    }
+  };
   useEffect(() => {
     const unsub = onValueCustom(
       `rooms/${currentRoom?.roomId}/members`,
@@ -152,7 +173,10 @@ export function ListMember(props: ListMemberProps) {
       <List>
         {listMember.map((member: Member) => (
           <ListItem key={member.uid} disablePadding>
-            <ListItemButton sx={{ gap: '.8rem' }}>
+            <ListItemButton
+              sx={{ gap: '.8rem' }}
+              onClick={(e) => handleClick(e, member.uid)}
+            >
               {member.isOnline ? (
                 <StyledBadgeOnline
                   overlap="circular"
@@ -165,7 +189,7 @@ export function ListMember(props: ListMemberProps) {
                       sx={{ width: 36, height: 36 }}
                     />
                   ) : (
-                    <Avatar sx={{ width: 36, height: 36 }}/>
+                    <Avatar sx={{ width: 36, height: 36 }} />
                   )}
                 </StyledBadgeOnline>
               ) : (
@@ -180,12 +204,12 @@ export function ListMember(props: ListMemberProps) {
                       sx={{ width: 36, height: 36 }}
                     />
                   ) : (
-                    <Avatar sx={{ width: 36, height: 36 }}/>
+                    <Avatar sx={{ width: 36, height: 36 }} />
                   )}
                 </StyledBadgeOffline>
               )}
               <ListItemText
-                primary={member.email}
+                primary={member.nickname ? member.nickname : member.email}
                 primaryTypographyProps={{ noWrap: true }}
               />
             </ListItemButton>
@@ -193,6 +217,23 @@ export function ListMember(props: ListMemberProps) {
         ))}
       </List>
       <Divider />
+      <Popover
+        id="popver-profile-card"
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        elevation={24}
+      >
+        <ProfileCard member={currentMember} />
+      </Popover>
     </>
   );
 }
