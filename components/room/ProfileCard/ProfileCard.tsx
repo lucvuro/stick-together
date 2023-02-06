@@ -84,6 +84,7 @@ export default function ProfileCard(props: IProfileCard) {
               >
                 {props.member.photoUrl ? (
                   <Avatar
+                    sx={{width: '90px', height:'90px'}}
                     src={props.member.photoUrl}
                     className={styles.profileCardImage}
                   />
@@ -108,26 +109,24 @@ export default function ProfileCard(props: IProfileCard) {
               </StyledBadgeOffline>
             )}
 
-            <div className={styles.profileCardChange}>Change Avatar</div>
+            {/* <div className={styles.profileCardChange}>Change Avatar</div> use latter */}
           </Box>
           <Box className={styles.profileCardContent}>
             <Paper elevation={5} className={styles.profileCardInfo}>
-              <Typography className={styles.profileCardTitle} variant="body2">
+              <p className={styles.profileCardTitle}>
                 {props.member.nickname
                   ? props.member.nickname
                   : props.member.email}
-              </Typography>
+              </p>
               <Divider />
               {props.member.about ? (
                 <Stack className={styles.profileCardItem} spacing={0.5}>
-                  <Typography
+                  <p
                     className={styles.profileCardSubTitle}
-                    variant="body2"
                   >
                     ABOUT ME
-                  </Typography>
+                  </p>
                   <Typography
-                    className={styles.profileCardDescription}
                     variant="body2"
                   >
                     {props.member.about}
@@ -137,15 +136,13 @@ export default function ProfileCard(props: IProfileCard) {
                 <></>
               )}
               <Stack className={styles.profileCardItem} spacing={0.5}>
-                <Typography
+                <p
                   className={styles.profileCardSubTitle}
-                  variant="body2"
                 >
                   MEMBER SINCE
-                </Typography>
+                </p>
                 {props.member.joinDate && (
                   <Typography
-                    className={styles.profileCardDescription}
                     variant="body2"
                   >
                     {converUTCStringToDateTime(
