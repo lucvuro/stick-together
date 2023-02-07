@@ -122,7 +122,6 @@ const useDatabase = () => {
           child(ref(database), 'rooms/' + roomId) //get room from DB with roomId(user)
         );
         roomContext.setCurrentRoom(roomFromDB.val());
-        console.log(roomFromDB.val())
       }
     } catch (err) {
       console.log(err);

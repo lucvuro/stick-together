@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, {useState} from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
@@ -16,12 +16,13 @@ import ChatComponent from './ChatComponent';
 import useUser from '@/hooks/useUser';
 import useRoom from '@/hooks/useRoom';
 import { UserControl } from './UserControl';
-import { Fab, Stack } from '@mui/material';
+import { Fab, Stack, Tooltip } from '@mui/material';
 import useMusicBox from '@/hooks/useMusicBox';
 import { MusicBoxModal } from './chat/MusicBoxModal';
 import { LoadingButton } from '@mui/lab';
 import useDatabase from '@/hooks/useDatabase';
 import { useRouter } from 'next/router';
+import { copyToClipBoard } from '@/utils/copyToClipboard';
 const drawerWidth = 240;
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
@@ -95,6 +96,7 @@ export default function MainComponent(props: MainComponetProps) {
       router.push('/');
     }
   };
+  const [copy, setCopy] = useState<boolean>(false)
   return (
     <>
       {currentUserApp && currentRoom && (
@@ -118,12 +120,31 @@ export default function MainComponent(props: MainComponetProps) {
                 direction="row"
               >
                 <Typography
-                  sx={{ width: { xs: '150px', md: '300px' } }}
+                  sx={{ width: { xs: '150px', md: '400px' } }}
                   variant="h6"
                   noWrap
                   component="div"
                 >
-                  Room ID: {currentRoom.roomId}
+                  Room ID:{' '}
+                  <Tooltip
+                    title={copy ? 'Coppied' : 'Click to coppy'}
+                    arrow
+                    placement="top"
+                  >
+                    <span
+                      style={{
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                      }}
+                      onClick={() => {
+                        if (!copy && currentRoom.roomId) {
+                          copyToClipBoard(currentRoom.roomId, setCopy);
+                        }
+                      }}
+                    >
+                      {currentRoom.roomId}
+                    </span>
+                  </Tooltip>
                 </Typography>
                 <LoadingButton
                   loading={loadingLeave}

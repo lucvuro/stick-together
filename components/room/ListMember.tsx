@@ -104,7 +104,6 @@ export function ListMember(props: ListMemberProps) {
       setCurrentMember(member);
     }
   };
-  const router = useRouter();
   useEffect(() => {
     const unsub = onValueCustom(
       `rooms/${currentRoom?.roomId}/members`,
@@ -118,13 +117,13 @@ export function ListMember(props: ListMemberProps) {
       unsub();
       setListMember([])
     }
-  }, []);
+  }, [currentRoom]);
   useEffect(() => {
     let peer: any;
     import('peerjs').then(({ default: Peer }) => {
       // normal synchronous code
       const getMediaStream = async () => {
-        if (currentUserApp && currentUserApp.uid) {
+        if (currentUserApp && currentUserApp.uid && currentRoom) {
           const mediaStream = await navigator.mediaDevices.getUserMedia({
             video: false,
             audio: true,
@@ -188,7 +187,7 @@ export function ListMember(props: ListMemberProps) {
     return () => {
       if (peer) peer.destroy();
     };
-  }, [currentUserApp]);
+  }, [currentUserApp, currentRoom]);
   return (
     <>
       <List>

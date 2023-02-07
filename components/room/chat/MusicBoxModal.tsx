@@ -4,6 +4,7 @@ import {
   CircularProgress,
   Fab,
   Modal,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
@@ -16,6 +17,7 @@ import useRoom from '@/hooks/useRoom';
 import LoadingComponent from '@/components/common/LoadingComponent';
 import styles from '@/styles/MusicBox.module.css';
 import ModalComponent from '@/components/common/Modal/ModalComponent';
+import { useRouter } from 'next/router';
 
 export interface MusicBoxModalProps {}
 
@@ -31,6 +33,7 @@ export function MusicBoxModal(props: MusicBoxModalProps) {
       audio.volume = level;
     }
   };
+  const router = useRouter();
   const connectToMusicBox = () => {
     if (!connected && currentRoom && !audio) {
       const audio = new Audio();
@@ -44,15 +47,16 @@ export function MusicBoxModal(props: MusicBoxModalProps) {
     }
     setOpenMusicBox(true);
   };
-  useEffect(() => {
+  router.events.on('routeChangeStart', () => {
     if (audio) {
-      return () => {
-        audio.removeEventListener('canplay', (e) => {
-          setConnected(true);
-        });
-      };
+      audio.pause()
+      audio.removeEventListener('canplay', (e) => {
+        setConnected(false);
+      });
+      setAudio(null);
+      setOpenMusicBox(false)
     }
-  }, [audio]);
+  });
   return (
     <>
       {!openMusicBox && connected && (
@@ -73,6 +77,7 @@ export function MusicBoxModal(props: MusicBoxModalProps) {
       )}
       {!openMusicBox && !connected && (
         <Box sx={{ position: 'absolute', bottom: '16px', right: '16px' }}>
+          <Tooltip title='Connect to Music Box' placement='top-start' arrow>
           <Fab
             color="primary"
             aria-label="music-box"
@@ -82,6 +87,7 @@ export function MusicBoxModal(props: MusicBoxModalProps) {
           >
             <MusicNoteIcon />
           </Fab>
+          </Tooltip>
         </Box>
       )}
       <ModalComponent

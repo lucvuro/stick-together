@@ -14,6 +14,7 @@ export interface IModalComponent {
   onClose: () => void;
   onApply?: () => void;
   loading?: boolean;
+  okText?: string;
 }
 export default function ModalComponent({
   title = '',
@@ -23,6 +24,7 @@ export default function ModalComponent({
   loading,
   onClose,
   onApply,
+  okText,
 }: IModalComponent) {
   return (
     <Modal open={open} onClose={onClose} disableAutoFocus>
@@ -51,12 +53,16 @@ export default function ModalComponent({
                   Cancel
                 </LoadingButton>
                 {loading ? (
-                  <LoadingButton loading={loading} onClick={() => onApply()} variant="contained">
-                    Apply
+                  <LoadingButton
+                    loading={loading}
+                    onClick={() => onApply()}
+                    variant="contained"
+                  >
+                    {okText ? okText : 'Apply'}
                   </LoadingButton>
                 ) : (
                   <LoadingButton onClick={() => onApply()} variant="contained">
-                    Apply
+                    {okText ? okText : 'Apply'}
                   </LoadingButton>
                 )}
               </Stack>
