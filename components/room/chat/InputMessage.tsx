@@ -8,7 +8,7 @@ import React, {
   useState,
 } from 'react';
 import styles from '@/styles/Chat.module.css';
-import { CurrentRoom, Message, RoomContext } from '@/Contexts/roomContext';
+import { CurrentRoom, Member, Message, RoomContext } from '@/Contexts/roomContext';
 import useAuth from '@/hooks/useAuth';
 import useDatabase from '@/hooks/useDatabase';
 import useRoom from '@/hooks/useRoom';
@@ -17,7 +17,7 @@ export interface InputMessageProps {}
 
 export function InputMessage(props: InputMessageProps) {
   const {currentUserApp} = useUser()
-  const {currentRoom} = useRoom()
+  const {currentRoom, listMember} = useRoom()
   const { addChatToRoom, loadingAdd } = useDatabase();
   const [message, setMessage] = useState<string>('');
   const handleOnChange = (
@@ -31,15 +31,23 @@ export function InputMessage(props: InputMessageProps) {
   ) => {
     if (e.key === 'Enter') {
       if (message && currentRoom && currentUserApp) {
+        let nickname = ''
+        listMember.forEach((member: Member) => {
+          if (member.uid === currentUserApp.uid && member.nickname){
+            nickname = member.nickname
+          }
+        })
         const messageToSend: Message = {
           content: message,
           sender: {
             uid: currentUserApp.uid,
             email: currentUserApp.email,
-            photoUrl: "",
-            isOnline: true
+            photoUrl: currentUserApp.photoUrl,
+            isOnline: true,
+            nickname: nickname,
           },
           mid: '',
+          createdAt: new Date().toUTCString()
         };
         addChatToRoom(currentRoom, messageToSend);
         setMessage('');

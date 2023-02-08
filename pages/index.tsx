@@ -3,11 +3,14 @@ import Image from 'next/image';
 import styles from '@/styles/Home.module.css';
 import { useEffect, useState } from 'react';
 import {
+  Avatar,
   Box,
   Button,
   CircularProgress,
   IconButton,
   Paper,
+  Tooltip,
+  Typography,
 } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
 import useAuth from '@/hooks/useAuth';
@@ -18,12 +21,17 @@ import useDatabase from '@/hooks/useDatabase';
 import { LoadingButton } from '@mui/lab';
 import useUser from '@/hooks/useUser';
 import useRoom from '@/hooks/useRoom';
+import LoadingComponent from '@/components/common/LoadingComponent';
+import ChangeAvatarModal from '@/components/common/ChangeAvatar';
+import { copyToClipBoard } from '@/utils/copyToClipboard';
 
 export default function Home() {
   const { getUserAndSetUserApp } = useDatabase();
   const { auth, router } = useAuth();
   const { currentUserApp } = useUser();
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false);
+  const [openChangeAvatarModal, setOpenChangeAvatarModal] =
+    useState<boolean>(false);
   const {
     createRoom,
     loadingCreate,
@@ -50,10 +58,11 @@ export default function Home() {
       leaveRoomFromUser(currentUserApp, currentRoom);
     }
   };
+  const [copy, setCopy] = useState<boolean>(false);
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
-        getUserAndSetUserApp(user.uid);
+        getUserAndSetUserApp(user);
         if (router.pathname === '/login') {
           router.push('/');
         }
@@ -63,11 +72,6 @@ export default function Home() {
     });
     return () => unsub();
   }, []);
-  useEffect(() => {
-    if (currentUserApp) {
-      getRoomFromUser(currentUserApp.roomId);
-    }
-  }, [currentUserApp]);
   return (
     <>
       <Head>
@@ -81,18 +85,35 @@ export default function Home() {
           <Box className={styles.homeProfile}>
             {currentUserApp ? (
               <>
-                <Image
-                  className={styles.homeProfileAvatar}
-                  src={defaultAvatar}
-                  alt="default-avatar"
-                  width={150}
-                  height={150}
-                />
-                <Box>
+                <Box className={styles.homeProfileAvatar}>
+                  {currentUserApp.photoUrl ? (
+                    <Avatar
+                      sx={{ width: '150px', height: '150px' }}
+                      src={currentUserApp.photoUrl}
+                      alt="avatar"
+                      variant="square"
+                    />
+                  ) : (
+                    <Avatar
+                      sx={{ width: '150px', height: '150px' }}
+                      alt="avatar"
+                      variant="square"
+                    />
+                  )}
+                  <div
+                    onClick={() => {
+                      setOpenChangeAvatarModal(true);
+                    }}
+                    className={styles.homeProfileAvatarButton}
+                  >
+                    <Typography variant="button">Change Avatar</Typography>
+                  </div>
+                </Box>
+                {/* <Box>
                   <IconButton>
                     <SettingsIcon />
                   </IconButton>
-                </Box>
+                </Box> */}
                 <div className={styles.profileInfo}>
                   <p>{currentUserApp.email}</p>
                 </div>
@@ -100,8 +121,8 @@ export default function Home() {
             ) : (
               <>
                 <Box className={styles.homeProfileLoading}>
+                  <LoadingComponent />
                   <p>Loading your profile...</p>
-                  <CircularProgress />
                 </Box>
               </>
             )}
@@ -130,7 +151,28 @@ export default function Home() {
                 ) : (
                   <>
                     <Box className={styles.homeRoomInfo}>
-                      <p>Your room is: {currentRoom.roomId}</p>
+                      <p>
+                        Your room is:{' '}
+                        <Tooltip
+                          title={copy ? 'Coppied' : 'Click to coppy'}
+                          arrow
+                          placement="top"
+                        >
+                          <span
+                            style={{
+                              cursor: 'pointer',
+                              textDecoration: 'underline',
+                            }}
+                            onClick={() => {
+                              if (!copy && currentRoom.roomId) {
+                                copyToClipBoard(currentRoom.roomId, setCopy);
+                              }
+                            }}
+                          >
+                            {currentRoom.roomId}
+                          </span>
+                        </Tooltip>
+                      </p>
                       <LoadingButton
                         onClick={handleClickRejoin}
                         sx={{ fontSize: '1.2rem' }}
@@ -155,14 +197,18 @@ export default function Home() {
             ) : (
               <>
                 <Box className={styles.homeProfileLoading}>
+                  <LoadingComponent />
                   <p>Loading your room info...</p>
-                  <CircularProgress />
                 </Box>
               </>
             )}
           </Box>
         </Paper>
         <ModalJoin open={openCreateModal} setOpen={setOpenCreateModal} />
+        <ChangeAvatarModal
+          open={openChangeAvatarModal}
+          setOpen={setOpenChangeAvatarModal}
+        />
       </main>
     </>
   );

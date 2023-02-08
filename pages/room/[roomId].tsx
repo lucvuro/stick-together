@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Fab,
 } from '@mui/material';
 import { onAuthStateChanged } from 'firebase/auth';
 import { GetStaticPropsContext } from 'next';
@@ -19,6 +20,8 @@ import styles from '@/styles/Room.module.css';
 import useDatabase from '@/hooks/useDatabase';
 import useRoom from '@/hooks/useRoom';
 import useUser from '@/hooks/useUser';
+import LoadingComponent from '@/components/common/LoadingComponent';
+import { DataSnapshot } from 'firebase/database';
 interface RoomDetailProps {
   currentRoom: CurrentRoom;
 }
@@ -26,14 +29,15 @@ export default function RoomDetail(props: RoomDetailProps) {
   const { auth, router } = useAuth();
   const { currentUserApp } = useUser();
   const { roomId } = router.query;
-  const { currentRoom } = useRoom();
+  const { currentRoom, setCurrentRoom } = useRoom();
   const [open, setOpen] = useState<boolean>(false);
   const [openAlreadyRoom, setOpenAlreadyRoom] = useState<boolean>(false);
   const {
     addMemberToRoom,
-    setStatusMember,
     getUserAndSetUserApp,
     getRoomAndSetRoom,
+    updateMemberToRoom,
+    onChildRemovedCustom,
   } = useDatabase();
   const handleOk = () => {
     router.push('/');
@@ -47,7 +51,7 @@ export default function RoomDetail(props: RoomDetailProps) {
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
         //If user have in app before dont need set again
-        getUserAndSetUserApp(user.uid);
+        getUserAndSetUserApp(user);
         if (router.pathname === '/login') {
           router.push('/');
         }
@@ -55,13 +59,27 @@ export default function RoomDetail(props: RoomDetailProps) {
         router.push('/login');
       }
     });
-    return () => unsub();
+    return () => {
+      unsub();
+      setCurrentRoom(null);
+    };
   }, []);
   useEffect(() => {
     if (currentUserApp && !currentRoom) {
       getRoomAndSetRoom(String(roomId), setOpen);
     }
   }, [currentUserApp]);
+  useEffect(() => {
+    if (currentUserApp) {
+      const unsub = onChildRemovedCustom(
+        `rooms/${currentUserApp.roomId}`,
+        (data: DataSnapshot) => {
+          setOpen(true)
+        }
+      );
+      return () => unsub()
+    }
+  }, []);
   useEffect(() => {
     if (currentRoom && currentUserApp) {
       if (
@@ -77,22 +95,10 @@ export default function RoomDetail(props: RoomDetailProps) {
         addMemberToRoom(currentRoom.roomId, currentUserApp);
       } else {
         //If user is a member in room set status to online
-        setStatusMember(currentRoom.roomId, currentUserApp.uid, true);
+        //And update member again
+        updateMemberToRoom(currentRoom.roomId, currentUserApp);
       }
     }
-    window.addEventListener('beforeunload', () => {
-      //Close browser wiill set status to offline
-      if (currentUserApp && currentRoom) {
-        setStatusMember(currentRoom.roomId, currentUserApp.uid, false);
-      }
-    });
-    return () => {
-      if (currentUserApp && currentRoom && currentRoom.roomId) {
-        //Component unmount will set status to offline
-        //because member is not in room
-        setStatusMember(currentRoom.roomId, currentUserApp.uid, false);
-      }
-    };
   }, [currentRoom]);
   return (
     <>
@@ -108,8 +114,8 @@ export default function RoomDetail(props: RoomDetailProps) {
         </main>
       ) : (
         <Box sx={{ color: 'text.primary' }} className={styles.roomLoading}>
+          <LoadingComponent />
           <p>Loading room infos....</p>
-          <CircularProgress />
         </Box>
       )}
       <Dialog

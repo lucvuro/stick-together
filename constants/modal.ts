@@ -4,5 +4,5 @@ export const STYLE_MODAL = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
   background: '#2d2d2d',
-  padding: '2rem',
+  // padding: '2rem',
 };

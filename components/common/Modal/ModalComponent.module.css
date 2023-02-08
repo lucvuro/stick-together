@@ -1,0 +1,27 @@
+.headerModal{
+    padding: 1rem;
+    align-items: center;
+    justify-content: space-between;
+}
+.contentModal{
+    padding: 0 1rem;
+    padding-bottom: 1rem;
+}
+.footerModal{
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    background: #4b4b4b;
+}
+@media only screen and (max-width: 800px){
+    .mainModal{
+        position: relative;
+        height: 100vh;
+        width: 100vw;
+    }
+    .footerModal{
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+    }
+}

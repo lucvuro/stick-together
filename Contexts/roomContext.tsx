@@ -1,10 +1,14 @@
 import React, { createContext, ReactNode, useState } from 'react';
+import { Song } from './musicboxContext';
 export interface RoomContext {
   currentRoom: CurrentRoom | null;
   setCurrentRoom: React.Dispatch<React.SetStateAction<CurrentRoom | null>>;
-  setRoom: (room: CurrentRoom | null, setDialog: React.Dispatch<React.SetStateAction<boolean>>) => void;
+  setRoom: (
+    room: CurrentRoom | null,
+    setDialog: React.Dispatch<React.SetStateAction<boolean>>
+  ) => void;
   listMessage: Message[];
-  listMember: Member[]
+  listMember: Member[];
   mediaStream: MediaStream | null;
   setListMessage: React.Dispatch<React.SetStateAction<Message[]>>;
   setListMember: React.Dispatch<React.SetStateAction<Member[]>>;
@@ -18,6 +22,10 @@ export interface CurrentRoom {
   createdAt: string;
   members: Object;
   chats: Object;
+  musicBox?: {
+    currentSong: Song;
+    playlist: Song[];
+  };
 }
 export interface Member {
   uid: string | undefined;
@@ -25,11 +33,15 @@ export interface Member {
   photoUrl: string | undefined | null;
   isOnline: boolean;
   peerId?: string;
+  nickname?: string;
+  about?: string;
+  joinDate?: string;
 }
 export interface Message {
   content: string;
   sender: Member;
   mid: string;
+  createdAt: string;
 }
 const RoomContext = createContext<RoomContext>({
   currentRoom: null,
@@ -42,43 +54,44 @@ const RoomContext = createContext<RoomContext>({
   setListMember: () => {},
   setMediaStream: () => {},
   setAudiosFromPeer: () => {},
-  muteAllAudio: () => {}
+  muteAllAudio: () => {},
 });
 const { Provider } = RoomContext;
 const RoomProvider = ({ children }: { children: ReactNode }) => {
   const [currentRoom, setCurrentRoom] = useState<CurrentRoom | null>(null);
   const [listMessage, setListMessage] = useState<Message[]>([]);
-  const [listMember, setListMember] = useState<Member[]>([])
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null)
-  const [listAudio, setListAudio] = useState<HTMLAudioElement[]>([])
-  const setRoom = (room: CurrentRoom | null, setDialog: React.Dispatch<React.SetStateAction<boolean>>) => {
+  const [listMember, setListMember] = useState<Member[]>([]);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [listAudio, setListAudio] = useState<HTMLAudioElement[]>([]);
+  const setRoom = (
+    room: CurrentRoom | null,
+    setDialog: React.Dispatch<React.SetStateAction<boolean>>
+  ) => {
     if (room) {
       setCurrentRoom(room);
-      if (
-        (room.chats)
-      ) {
+      if (room.chats) {
         //If have chats on server but chats on client is empty
         //Or have chats on server but not have room
-        const messages = Object.values(room.chats)
+        const messages = Object.values(room.chats);
         setListMessage(messages);
       }
-      if (room.members){
-        setListMember(Object.values(room.members))
+      if (room.members) {
+        setListMember(Object.values(room.members));
       }
       // addMemberToRoom(room.roomId, currentUser)
     } else {
-      setDialog(true)
+      setDialog(true);
       setCurrentRoom(null);
     }
-  }
+  };
   const setAudiosFromPeer = (audio: HTMLAudioElement) => {
-    setListAudio([...listAudio, audio])
-  }
+    setListAudio([...listAudio, audio]);
+  };
   const muteAllAudio = (mute: boolean) => {
     listAudio.map((audio: HTMLAudioElement, peer, audios) => {
-      audios[peer].muted = mute
-    })
-  }
+      audios[peer].muted = mute;
+    });
+  };
   return (
     <Provider
       value={{

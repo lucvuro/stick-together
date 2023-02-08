@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, {useState} from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
@@ -16,12 +16,19 @@ import ChatComponent from './ChatComponent';
 import useUser from '@/hooks/useUser';
 import useRoom from '@/hooks/useRoom';
 import { UserControl } from './UserControl';
-
+import { Fab, Stack, Tooltip } from '@mui/material';
+import useMusicBox from '@/hooks/useMusicBox';
+import { MusicBoxModal } from './chat/MusicBoxModal';
+import { LoadingButton } from '@mui/lab';
+import useDatabase from '@/hooks/useDatabase';
+import { useRouter } from 'next/router';
+import { copyToClipBoard } from '@/utils/copyToClipboard';
 const drawerWidth = 240;
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
   open?: boolean;
 }>(({ theme, open }) => ({
+  position: 'relative',
   flexGrow: 1,
   //   padding: theme.spacing(3),
   transition: theme.transitions.create('margin', {
@@ -81,6 +88,15 @@ export default function MainComponent(props: MainComponetProps) {
   };
   const { currentUserApp } = useUser();
   const { currentRoom } = useRoom();
+  const { leaveRoomFromUser, loadingLeave } = useDatabase();
+  const router = useRouter();
+  const onClickLeaveRoom = async () => {
+    if (currentRoom && currentUserApp) {
+      await leaveRoomFromUser(currentUserApp, currentRoom);
+      router.push('/');
+    }
+  };
+  const [copy, setCopy] = useState<boolean>(false)
   return (
     <>
       {currentUserApp && currentRoom && (
@@ -97,9 +113,48 @@ export default function MainComponent(props: MainComponetProps) {
               >
                 <MenuIcon />
               </IconButton>
-              <Typography variant="h6" noWrap component="div">
-                Room ID: {currentRoom.roomId}
-              </Typography>
+              <Stack
+                sx={{ width: '100%' }}
+                justifyContent="space-between"
+                spacing={2}
+                direction="row"
+              >
+                <Typography
+                  sx={{ width: { xs: '150px', md: '400px' } }}
+                  variant="h6"
+                  noWrap
+                  component="div"
+                >
+                  Room ID:{' '}
+                  <Tooltip
+                    title={copy ? 'Coppied' : 'Click to coppy'}
+                    arrow
+                    placement="top"
+                  >
+                    <span
+                      style={{
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                      }}
+                      onClick={() => {
+                        if (!copy && currentRoom.roomId) {
+                          copyToClipBoard(currentRoom.roomId, setCopy);
+                        }
+                      }}
+                    >
+                      {currentRoom.roomId}
+                    </span>
+                  </Tooltip>
+                </Typography>
+                <LoadingButton
+                  loading={loadingLeave}
+                  onClick={onClickLeaveRoom}
+                  color="error"
+                  variant="contained"
+                >
+                  Leave Room
+                </LoadingButton>
+              </Stack>
             </Toolbar>
           </AppBar>
           <Drawer
@@ -134,6 +189,7 @@ export default function MainComponent(props: MainComponetProps) {
           <Main open={open}>
             <DrawerHeader />
             <ChatComponent />
+            <MusicBoxModal />
           </Main>
         </Box>
       )}

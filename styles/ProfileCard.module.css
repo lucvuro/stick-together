@@ -1,0 +1,61 @@
+.profileCard {
+  position: relative;
+  width: 350px;
+}
+.profileCardBanner {
+  height: 80px;
+  background-color: purple;
+  width: 100%;
+}
+.profileCardAvatar {
+  position: absolute;
+  top: 30px;
+  left: 10px;
+  border-radius: 50%;
+  background: #2d2d2d;
+  padding: 0.5rem;
+}
+.profileCardImage {
+
+}
+.profileCardChange {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  font-weight: bold;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  border-radius: 50%;
+  display: none;
+}
+.profileCardAvatar:hover .profileCardChange {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.8);
+}
+.profileCardContent {
+  padding: 2rem 1rem;
+}
+.profileCardInfo {
+  margin-top: 2rem;
+  padding: 1rem;
+}
+.profileCardTitle {
+  margin-bottom: 1rem;
+}
+.profileCardItem {
+  margin-top: 1rem;
+}
+.profileCardTitle{
+    font-weight: bold;
+    font-size: 1rem;
+}
+.profileCardSubTitle {
+  font-weight: bold;
+  letter-spacing: 0.1rem;
+  font-size: .8rem;
+}
